@@ -1,0 +1,254 @@
+[project]
+name = "google-cloud-hsm"
+authors = [
+  { name = "google-cloud-hsm", email = "king.arthur@camelot.bt" }
+]
+description = "Cloud HSM to sign Web3.py Ethereum transactions"
+readme = "README.md"
+dynamic = ["version"]
+license = { file = "LICENSE" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+requires-python = ">=3.10"
+dependencies = [
+]
+
+[project.urls]
+Documentation = "https://Aviksaikat.github.io/google-cloud-hsm/"
+Source = "https://github.com/Ankvik-Tech-Labs/google-cloud-hsm"
+
+[tool.hatch]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+
+##############
+# Versioning #
+##############
+
+[tool.hatch.version]
+source = "regex_commit"
+commit_extra_args = ["-e"]
+path = "src/google_cloud_hsm/__version__.py"
+
+
+# [tool.hatch.build.hooks.vcs]
+# version-file = "src/google_cloud_hsm/_version.py"
+
+
+##################
+# External Tools #
+##################
+
+[tool.mypy]
+files = ["google_cloud_hsm"]
+exclude = ["build/", "dist/", "docs/", "tests/*"]
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
+plugins = ["pydantic.mypy"]
+
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+indent-width = 4
+include = [
+  "src/**/*.py",
+  "src/**/*.pyi",
+  "tests/**/*.py",
+  "tests/**/*.pyi"
+]
+exclude = ["tests", "src/google_cloud_hsm/_version.py"]
+
+[tool.ruff.lint]
+preview = true # preview features & checks, use with caution
+extend-select = [ # features in preview
+    "W292", # missing-newline-at-end-of-file
+]
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT", # Boolean trap
+    "ICN",
+    "ISC",
+    "I",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+    "RUF100", # Automatically remove unused # noqa directives
+]
+ignore = [
+    # Allow non-abstract empty methods in abstract base classes
+    "B027",
+    # Allow boolean positional values in function calls, like `dict.get(... True)`
+    "FBT003",
+    # Ignore checks for possible passwords
+    "S105", "S106", "S107",
+    # Ignore complexity
+    "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+    "PLC1901", # empty string comparisons
+    "PLW2901", # `for` loop variable overwritten
+    "SIM114", # Combine `if` branches using logical `or` operator
+    "E203", # Whitespace before :, needed for black compatability and also `ruff format`
+    "ISC001", # causes unexpected behaviour with formatter
+]
+
+
+[tool.ruff.lint.isort]
+known-first-party = ["google_cloud_hsm"]
+
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+
+[tool.ruff.lint.per-file-ignores]
+# Allow print/pprint
+"examples/*" = ["T201"]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
+
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/google_cloud_hsm/ --cov-report=term-missing"
+asyncio_mode = "strict"
+
+[tool.coverage.run]
+branch = true
+source = ["src/google_cloud_hsm"]
+omit = [
+  # automatically created by hatch-vcs, not in repo
+  "_version.py",
+]
+
+[tool.coverage.paths]
+source = [
+  "src/",
+  "*/site-packages/",
+]
+
+
+#####################
+# Environment Setup #
+#####################
+
+
+# Default env dendencies
+[tool.hatch.envs.default]
+dependencies = [
+  "pydantic",
+]
+installer = "uv" # or "pip"
+post-install-commands = ["pre-commit install"]
+
+
+# Lint env dendencies
+[tool.hatch.envs.lint]
+dependencies = [
+  "pydantic",
+  "mypy",
+  "ruff",
+"deptry",
+]
+
+
+[tool.hatch.envs.lint.scripts]
+typing = [
+  "echo \"VERSION: `mypy --version`\"",
+  "mypy --install-types --non-interactive {args}"
+]
+lint = [
+  "echo \"VERSION: `ruff --version`\"",
+  "ruff format .",
+  "ruff check . --fix",
+  "mypy src/google_cloud_hsm/",
+]
+lint-check = [
+  "echo \"VERSION: `ruff --version`\"",
+  "ruff format --check .",
+  "ruff check .",
+  "mypy src/google_cloud_hsm/",
+]
+
+# Docs env dendencies
+[tool.hatch.envs.docs]
+dependencies = [
+"mkdocs",
+  "mkdocs-material",
+  "mkdocs-gen-files",
+  "mkdocstrings[python]",
+  "linkchecker",
+]
+
+
+[tool.hatch.envs.docs.scripts]
+docs-serve = "mkdocs serve"
+docs-build = "mkdocs build --clean --strict"
+# --ignore-url=None since the SUMMARY.md file leaves a <toc>None</toc> in sitemap.xml
+validate = "linkchecker --config .linkcheckerrc --ignore-url=/reference --ignore-url=None site"
+# https://github.com/linkchecker/linkchecker/issues/678
+build-check = [
+  "docs-build",
+  "validate",
+]
+
+# Testing env dendencies
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest",
+"pytest-cov",
+"pytest-asyncio",
+]
+
+
+[tool.hatch.envs.test.scripts]
+test = "pytest"
+test-cov-xml = "pytest --cov-report=xml"
+
+
+# Replace tox & nox
+[[tool.hatch.envs.test.matrix]]
+python = ["3.10"]
+
+#########
+# Build #
+#########
+
+[build-system]
+requires = ["hatchling", "hatch-regex-commit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/google_cloud_hsm/"]
+
