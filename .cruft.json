@@ -1,0 +1,32 @@
+{
+  "template": "https://github.com/Aviksaikat/cookiecutter-hatch-pypackage",
+  "commit": "650171d707d0eb9b98d3f9de212d6e05368042e3",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "full_name": "Saikat K",
+      "email": "king.arthur@camelot.bt",
+      "github_username": "Aviksaikat",
+      "project_name": "Google Cloud HSM",
+      "dist_name": "google-cloud-hsm",
+      "package_name": "google_cloud_hsm",
+      "project_short_description": "Cloud HSM to sign Web3.py Ethereum transactions",
+      "repository_name": "Ankvik-Tech-Labs/google-cloud-hsm",
+      "repository_url": "https://github.com/Ankvik-Tech-Labs/google-cloud-hsm",
+      "docs_url": "https://Aviksaikat.github.io/google-cloud-hsm/",
+      "open_source_license": "BSD license",
+      "python_version": "3.10",
+      "asyncio": "Y",
+      "pydantic": "Y",
+      "codecov": "Y",
+      "deptry": "Y",
+      "mkdocs": "Y",
+      "docs_icon": "material/library",
+      "docs_color_primary": "teal",
+      "docs_color_accent": "light blue",
+      "lock_file_support": false,
+      "_template": "https://github.com/Aviksaikat/cookiecutter-hatch-pypackage"
+    }
+  },
+  "directory": null
+}

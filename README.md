@@ -18,7 +18,15 @@
 
 # Description
 
-Cloud HSM to sign Web3.py Ethereum transactions
+A Python library for using Cloud HSM services to sign Ethereum transactions.
+
+# Features
+
+- Cloud HSM integration for secure key management
+- Support for Google Cloud HSM (extensible to other providers)
+- Compatible with Web3.py and Ape
+- Type-safe configuration using Pydantic
+
 
 # Installation
 

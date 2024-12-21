@@ -137,7 +137,6 @@ ban-relative-imports = "all"
 
 [tool.pytest.ini_options]
 addopts = "--cov=src/google_cloud_hsm/ --cov-report=term-missing"
-asyncio_mode = "strict"
 
 [tool.coverage.run]
 branch = true
@@ -163,9 +162,19 @@ source = [
 [tool.hatch.envs.default]
 dependencies = [
   "pydantic",
+  "google-cloud-kms",
+  "eth-account",
+  "eth-utils",
+  "eth-keys",
 ]
 installer = "uv" # or "pip"
 post-install-commands = ["pre-commit install"]
+
+[project.optional-dependencies]
+dev = [
+  "ipython",
+  "web3"
+]
 
 
 # Lint env dendencies
@@ -174,7 +183,7 @@ dependencies = [
   "pydantic",
   "mypy",
   "ruff",
-"deptry",
+  "deptry",
 ]
 
 
@@ -199,11 +208,12 @@ lint-check = [
 # Docs env dendencies
 [tool.hatch.envs.docs]
 dependencies = [
-"mkdocs",
+  "mkdocs",
   "mkdocs-material",
   "mkdocs-gen-files",
   "mkdocstrings[python]",
   "linkchecker",
+  # "bmt_py @ {root:uri}/"
 ]
 
 
@@ -223,7 +233,6 @@ build-check = [
 dependencies = [
   "pytest",
 "pytest-cov",
-"pytest-asyncio",
 ]
 
 
