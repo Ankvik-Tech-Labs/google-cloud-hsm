@@ -1,10 +1,4 @@
-"""Cloud HSM to sign Web3.py Ethereum transactions"""
+from google_cloud_hsm.exceptions import HSMError, KeyNotFoundError, SigningError
+from google_cloud_hsm.signer import GoogleHSMSigner
 
-from importlib.metadata import PackageNotFoundError, version
-
-try:
-    __version__ = version("google-cloud-hsm")
-except PackageNotFoundError:  # pragma: no cover
-    __version__ = "unknown"
-finally:
-    del version, PackageNotFoundError
+__all__ = ["GoogleHSMSigner", "HSMError", "KeyNotFoundError", "SigningError"]

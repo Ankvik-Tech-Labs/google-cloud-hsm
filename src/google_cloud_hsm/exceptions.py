@@ -1,16 +1,16 @@
-class CloudHSMError(Exception):
-    """Base exception for Cloud HSM operations."""
+class HSMError(Exception):
+    """Base exception for HSM operations."""
 
     pass
 
 
-class SigningError(CloudHSMError):
-    """Error during transaction or message signing."""
+class SigningError(HSMError):
+    """Error during signature operations."""
 
     pass
 
 
-class ConfigurationError(CloudHSMError):
-    """Error in HSM configuration."""
+class KeyNotFoundError(HSMError):
+    """Key not found in HSM."""
 
     pass

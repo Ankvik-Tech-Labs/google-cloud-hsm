@@ -134,10 +134,6 @@ ban-relative-imports = "all"
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
-
-[tool.pytest.ini_options]
-addopts = "--cov=src/google_cloud_hsm/ --cov-report=term-missing"
-
 [tool.coverage.run]
 branch = true
 source = ["src/google_cloud_hsm"]
@@ -150,6 +146,13 @@ omit = [
 source = [
   "src/",
   "*/site-packages/",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "no cov",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]
 
 
@@ -166,6 +169,8 @@ dependencies = [
   "eth-account",
   "eth-utils",
   "eth-keys",
+  "ecdsa[gmpy2]",
+  "python-dotenv"
 ]
 installer = "uv" # or "pip"
 post-install-commands = ["pre-commit install"]
@@ -232,8 +237,30 @@ build-check = [
 [tool.hatch.envs.test]
 dependencies = [
   "pytest",
-"pytest-cov",
+  "pytest-cov",
+  "eth-account"
 ]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--verbose",
+    "--strict-markers",
+    "-ra",
+    "--cov=src/google_cloud_hsm/",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+]
+markers = [
+    "integration: marks tests as integration tests",
+    "performance: marks tests as performance tests",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+
+
 
 
 [tool.hatch.envs.test.scripts]
