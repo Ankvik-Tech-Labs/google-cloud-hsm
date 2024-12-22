@@ -1,246 +1,317 @@
+from typing import Optional, Dict, Any, Tuple
 import os
-from dotenv import load_dotenv
-from cryptography.hazmat.primitives import serialization
-from cryptography.x509.oid import NameOID
-import base64
-from eth_account import Account
-from eth_account.messages import encode_defunct
-from eth_account.datastructures import SignedTransaction
-from eth_utils import to_wei, decode_hex, encode_hex
-from eth_utils.curried import keccak
-from eth_keys import KeyAPI
+from abc import ABC, abstractmethod
+from rich.console import Console
+
+import dotenv
 from google.cloud import kms
-from google.cloud.kms import KeyManagementServiceClient
+from google.cloud.kms_v1 import KeyManagementServiceClient
+from eth_account._utils.signing import to_standard_v
+from eth_account.messages import encode_defunct
+from eth_utils.conversions import to_bytes
+from eth_keys import keys
+from eth_utils import keccak, to_checksum_address
 import rlp
-from typing import Dict, Any, Optional
-import base64
-import struct
+from cryptography.hazmat.primitives import serialization
+from dataclasses import dataclass
+import ecdsa
 
-load_dotenv()
+console = Console()
+
+@dataclass
+class UnsignedTransaction:
+    """Represents an unsigned Ethereum transaction"""
+    nonce: int
+    gas_price: int
+    gas_limit: int
+    to: str
+    value: int
+    data: bytes
+    chain_id: int
 
 
-class EthereumTransaction:
+class BaseCloudSigner(ABC):
+    """Base class for cloud HSM signers"""
+
+    @abstractmethod
+    def sign_message(self, message_hash: bytes) -> tuple[bytes, bytes, int]:
+        """Sign a message hash and return r, s, v components"""
+        pass
+
+    @abstractmethod
+    def get_public_key(self) -> bytes:
+        """Get the public key bytes"""
+        pass
+
+    def get_address(self) -> str:
+        """Derive Ethereum address from public key"""
+        public_key_bytes = self.get_public_key()
+        return keccak(public_key_bytes)[-20:].hex()
+
+
+# SECP256k1 curve order
+SECP256_K1_N = int("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16)
+
+
+def convert_der_to_rs(signature: bytes) -> Tuple[bytes, bytes]:
+    """Convert DER signature to R, S components"""
+    r, s = ecdsa.util.sigdecode_der(signature, ecdsa.SECP256k1.order)
+
+    # Handle signature malleability - ensure s is in lower half of curve order
+    if s > SECP256_K1_N // 2:
+        s = SECP256_K1_N - s
+
+    # Convert to 32-byte representation
+    r_bytes = r.to_bytes(32, byteorder="big")
+    s_bytes = s.to_bytes(32, byteorder="big")
+
+    return r_bytes, s_bytes
+
+
+class CloudHSMEthereumSigner(BaseCloudSigner):
+    """Google Cloud KMS implementation of Ethereum signer"""
+
     def __init__(
         self,
-        nonce: int,
-        gas_price: int,
-        gas_limit: int,
-        to: str,
-        value: int,
-        data: bytes,
-        chain_id: int
+        project_id: str,
+        location_id: str,
+        key_ring_id: str,
+        key_id: str,
+        key_version: str = "1"
     ):
-        self.nonce = nonce
-        self.gas_price = gas_price
-        self.gas_limit = gas_limit
-        self.to = decode_hex(to) if to.startswith('0x') else decode_hex('0x' + to)
-        self.value = value
-        self.data = data
-        self.chain_id = chain_id
+        from google.cloud.kms_v1.types import CryptoKeyVersion
 
-    def serialize_unsigned(self) -> bytes:
-        """Serialize transaction for signing according to EIP-155"""
-        fields = [
-            self.nonce,
-            self.gas_price,
-            self.gas_limit,
-            self.to,
-            self.value,
-            self.data,
-            self.chain_id,
-            0,  # v
-            0  # s
-        ]
-        return rlp.encode(fields)
-
-
-class CloudHSMEthereumSigner:
-    def __init__(self, project_id: str, location_id: str, key_ring_id: str, key_id: str, key_version: str):
-        """
-        Initialize Cloud HSM signer for Ethereum transactions
-
-        Args:
-            project_id: Google Cloud project ID
-            location_id: Location of the key ring (e.g., 'global')
-            key_ring_id: ID of the key ring
-            key_id: ID of the key
-            key_version: Version of the key
-        """
-        self.kms_client = KeyManagementServiceClient()
+        self.client = KeyManagementServiceClient()
         self.key_path = (
             f"projects/{project_id}/locations/{location_id}/"
             f"keyRings/{key_ring_id}/cryptoKeys/{key_id}/"
             f"cryptoKeyVersions/{key_version}"
         )
-        self.keys = KeyAPI()
+        # Cache the public key and address
+        self._public_key: Optional[bytes] = None
+        self._address: Optional[str] = None
+
+        # Verify key algorithm
+        key_version = self.client.get_crypto_key_version(name=self.key_path)
+        console.print(f"\nKey Algorithm: {key_version.algorithm}")
+        if key_version.algorithm != CryptoKeyVersion.CryptoKeyVersionAlgorithm.EC_SIGN_SECP256K1_SHA256:
+            raise ValueError(
+                f"Key must use EC_SIGN_SECP256K1_SHA256 algorithm (31), got {key_version.algorithm}"
+            )
 
     def extract_public_key_bytes(self, pem_str: str) -> bytes:
-        """
-        Extract the raw public key bytes from PEM format
-
-        Args:
-            pem_str: Public key in PEM format
-
-        Returns:
-            bytes: Raw public key bytes
-        """
-        # Add PEM headers if they're not present
+        """Extract raw public key bytes from PEM format"""
         if not pem_str.startswith('-----BEGIN PUBLIC KEY-----'):
             pem_str = f"-----BEGIN PUBLIC KEY-----\n{pem_str}\n-----END PUBLIC KEY-----"
 
-        # Convert PEM string to bytes
         pem_bytes = pem_str.encode('utf-8')
-
-        # Load the public key
         public_key = serialization.load_pem_public_key(pem_bytes)
 
-        # Get the raw bytes in uncompressed format (0x04 + X + Y coordinates)
         raw_bytes = public_key.public_bytes(
             encoding=serialization.Encoding.X962,
             format=serialization.PublicFormat.UncompressedPoint
         )
-
-        return raw_bytes
+        # Return only X and Y coordinates (64 bytes)
+        return raw_bytes[-64:]
 
     def get_public_key(self) -> bytes:
-        """Get public key from Cloud HSM"""
-        response = self.kms_client.get_public_key(name=self.key_path)
-        pem_str = response.pem  # This is already a string, no need to decode
-        # print(pem_str)
-        return self.extract_public_key_bytes(pem_str)
+        """Get or fetch public key bytes"""
+        if self._public_key is None:
+            public_key = self.client.get_public_key(name=self.key_path)
+            self._public_key = self.extract_public_key_bytes(public_key.pem)
+        return self._public_key
 
-    def get_address(self) -> str:
-        """Get Ethereum address corresponding to the HSM key"""
-        try:
-            public_key_bytes = self.get_public_key()
-            # Remove the '04' prefix if present (uncompressed point marker)
-            if public_key_bytes.startswith(b'\x04'):
-                public_key_bytes = public_key_bytes[1:]
+    def sign_message(self, message_hash: bytes) -> tuple[bytes, bytes, int]:
+        """Sign a message hash using Cloud KMS"""
+        console.print(f"Signing message hash: {message_hash.hex()}")
 
-            # Calculate keccak256 hash of the public key
-            address_bytes = keccak(public_key_bytes)[-20:]  # Take last 20 bytes
-            return f"{encode_hex(address_bytes)}"
-
-        except Exception as e:
-            raise ValueError(f"Error deriving Ethereum address: {str(e)}")
-
-    def sign_transaction(self, transaction: EthereumTransaction) -> bytes:
-        """
-        Sign an Ethereum transaction using Cloud HSM
-
-        Args:
-            transaction: EthereumTransaction instance to sign
-
-        Returns:
-            bytes: RLP encoded signed transaction
-        """
-        # Serialize transaction
-        message = transaction.serialize_unsigned()
-
-        # Calculate message hash according to EIP-155
-        message_hash = keccak(message)
-
-        # Sign using Cloud HSM
-        sign_request = {
-            "digest": {
-                "sha256": message_hash
-            }
-        }
-
-        response = self.kms_client.asymmetric_sign(
+        response = self.client.asymmetric_sign(
             request={
                 "name": self.key_path,
-                **sign_request
+                "digest": {"sha256": message_hash},
             }
         )
 
-        # Extract R, S values from the signature
-        signature = response.signature
-        r = int.from_bytes(signature[:32], 'big')
-        s = int.from_bytes(signature[32:], 'big')
+        console.print(f"Raw signature from KMS: {response.signature.hex()}")
 
-        # Calculate V value according to EIP-155
-        v = 35 + transaction.chain_id * 2
+        # Convert DER signature to R, S
+        r_bytes, s_bytes = convert_der_to_rs(response.signature)
 
-        # Create signed transaction
-        signed_fields = [
+        console.print(f"Decoded R: {r_bytes.hex()}")
+        console.print(f"Decoded S: {s_bytes.hex()}")
+
+        import eth_keys
+
+        # Convert public key to eth_keys format
+        pub_key_bytes = self.get_public_key()
+        public_key = eth_keys.keys.PublicKey(pub_key_bytes)
+
+        # Try both possible v values (0 and 1)
+        for v in (0, 1):
+            try:
+                signature = eth_keys.keys.Signature(
+                    vrs=(v,
+                         int.from_bytes(r_bytes, 'big'),
+                         int.from_bytes(s_bytes, 'big'))
+                )
+
+                recovered_key = signature.recover_public_key_from_msg_hash(message_hash)
+                console.print(f"Recovered with v={v}: {recovered_key}")
+                console.print(f"Expected: {public_key}")
+
+                if recovered_key == public_key:
+                    v = v + 27  # Convert to Ethereum format
+                    return r_bytes, s_bytes, v
+
+            except Exception as e:
+                console.print(f"Failed with v={v}: {e}")
+
+        raise ValueError("Could not determine correct v value")
+
+    def sign_transaction(self, transaction: UnsignedTransaction) -> str:
+        """Sign an Ethereum transaction and return the hex string"""
+        # Get the message hash
+        message = rlp.encode([
             transaction.nonce,
             transaction.gas_price,
             transaction.gas_limit,
-            transaction.to,
+            to_bytes(hexstr=transaction.to),
+            transaction.value,
+            transaction.data,
+            transaction.chain_id,
+            0,  # v
+            0,  # r
+            0,  # s
+        ])
+        msg_hash = keccak(message)
+
+        # Sign the hash
+        r, s, v = self.sign_message(msg_hash)
+
+        # Adjust v for EIP-155
+        v = to_standard_v(v)
+        v = v + 35 + transaction.chain_id * 2
+
+        # Create signed transaction
+        signed = rlp.encode([
+            transaction.nonce,
+            transaction.gas_price,
+            transaction.gas_limit,
+            to_bytes(hexstr=transaction.to),
             transaction.value,
             transaction.data,
             v,
-            r,
-            s
-        ]
+            int.from_bytes(r, 'big'),
+            int.from_bytes(s, 'big'),
+        ])
 
-        return rlp.encode(signed_fields)
+        return '0x' + signed.hex()
 
 
-def build_transaction(
-    nonce: int,
-    gas_price_gwei: int,
-    gas_limit: int,
-    to_address: str,
-    value_eth: float,
-    data: bytes = b'',
-    chain_id: int = 1
-) -> EthereumTransaction:
-    """Helper function to build an Ethereum transaction"""
-    return EthereumTransaction(
-        nonce=nonce,
-        gas_price=to_wei(gas_price_gwei, 'gwei'),
-        gas_limit=gas_limit,
-        to=to_address,
-        value=to_wei(value_eth, 'ether'),
-        data=data,
-        chain_id=chain_id
+class CloudHSMAccount:
+    """Web3.py compatible account using Cloud HSM"""
+
+    def __init__(self, signer: CloudHSMEthereumSigner, web3):
+        self.signer = signer
+        self.web3 = web3
+        self.address = to_checksum_address("0x" + signer.get_address())
+
+    def sign_transaction(self, transaction_dict: Dict[str, Any]) -> str:
+        """Sign a Web3.py style transaction dict"""
+        # Convert transaction dict to UnsignedTransaction
+        unsigned = UnsignedTransaction(
+            nonce=transaction_dict['nonce'],
+            gas_price=transaction_dict['gasPrice'],
+            gas_limit=transaction_dict['gas'],
+            to=transaction_dict['to'],
+            value=transaction_dict['value'],
+            data=to_bytes(hexstr=transaction_dict['data']),
+            chain_id=transaction_dict.get('chainId', self.web3.eth.chain_id),
+        )
+        return self.signer.sign_transaction(unsigned)
+
+    @classmethod
+    def load_from_hsm(cls, web3, **signer_kwargs):
+        """Create account from HSM configuration"""
+        signer = CloudHSMEthereumSigner(**signer_kwargs)
+        return cls(signer, web3)
+
+
+
+
+def test_signer():
+    dotenv.load_dotenv()
+    """Test function to verify signer functionality"""
+    from web3 import Web3
+    web3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+
+    # Initialize account
+    account = CloudHSMAccount.load_from_hsm(
+        web3=web3,
+        project_id=os.environ["GOOGLE_CLOUD_PROJECT"],
+        location_id=os.environ["GOOGLE_CLOUD_REGION"],
+        key_ring_id=os.environ["KEY_RING"],
+        key_id=os.environ["KEY_NAME"]
     )
 
+    console.print(f"Account address: {account.address}")
 
-def main():
-    # Load environment variables
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
-    key_ring_id = os.environ.get("KEY_RING")
-    key_id = os.environ.get("KEY_NAME")
-    location_id = os.environ.get("GOOGLE_CLOUD_REGION")
-
-    # Initialize the signer
-    signer = CloudHSMEthereumSigner(
-        project_id=project_id,
-        location_id=location_id,
-        key_ring_id=key_ring_id,
-        key_id=key_id,
-        key_version="1"
+    # Get funded account from Anvil
+    funded_account = web3.eth.account.from_key(
+        "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     )
 
-    # Build transaction
-    transaction = build_transaction(
-        nonce=0,
-        gas_price_gwei=50,
-        gas_limit=21000,
-        to_address="0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        value_eth=0.1
-    )
+    # Fund the HSM account
+    tx = {
+        'from': funded_account.address,
+        'to': Web3.to_checksum_address(account.address),
+        'value': web3.to_wei(0.001, 'ether'),  # Send 0.1 ETH
+        'gas': 21000,
+        'gasPrice': web3.eth.gas_price,
+        'nonce': web3.eth.get_transaction_count(funded_account.address),
+        'chainId': web3.eth.chain_id,
+        'data': '0x'
+    }
 
-    # Sign transaction
-    signed_tx = signer.sign_transaction(transaction)
-    print(f"{signed_tx.hex()=}")
+    signed_tx = web3.eth.account.sign_transaction(tx, funded_account.key)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+    receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
 
-    # Get transaction hash
-    tx_hash = keccak(signed_tx)
-    print(f"Transaction hash: {encode_hex(tx_hash)}")
+    console.print(f"Funded account. TX hash: {receipt['transactionHash'].hex()}")
+    console.print(f"Balance: {web3.eth.get_balance(account.address)}")
 
-    # Get sender address
-    sender = signer.get_address()
-    print(f"Sender address: {sender}")
+    # Calculate the maximum amount we can send (leaving enough for gas)
+    gas_price = web3.eth.gas_price
+    gas_limit = 21000  # Standard ETH transfer
+    gas_cost = gas_price * gas_limit
+    balance = web3.eth.get_balance(account.address)
+    send_amount = balance - gas_cost  # Leave enough for gas
 
-"""
-signed_tx = 0xf87380850ba43b740082520894742d35cc6634c0532925a3b844bc454e4438f44e88016345785d8a00008025a03045022100f331f868c1f25845aa6f39573d01062d75d00c8885149d57b7fe9aa7ed47d04edb02201f3a4d93dd7240d955e15e8e741d2cc68f6075f5bba217c00e97b017fd7641b8
-Transaction hash: 0xebfea470b1694d3c77ca65dbd5f99fd0b930c268fcb140eecc3a8dc8270f9d69
-Sender address: 0x0545640a0ecd6fb6ae94766811f30dcda4746dfc
-"""
+    console.print(f"Gas price: {gas_price}")
+    console.print(f"Gas cost: {gas_cost}")
+    console.print(f"Available to send: {send_amount}")
+
+    # Test a transfer with the calculated amount
+    tx = {
+        'from': account.address,
+        'to': Web3.to_checksum_address("0x4BB009C88B4718b06AbC236faAF1f06bBA3e610d"),
+        'value': web3.to_wei(0.0000001, 'ether'),
+        'gas': 2100000,
+        'gasPrice': 234567897654321,
+        'nonce': web3.eth.get_transaction_count(account.address),
+        'chainId': web3.eth.chain_id,
+        'data': ''
+    }
+
+    signed_tx = account.sign_transaction(tx)
+    console.print(f"Signed Tx: {signed_tx}")
+    console.print(tx)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx)
+    receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+    console.print(f"Transfer successful. TX hash: {receipt['transactionHash'].hex()}")
+    console.print(f"Final balance: {web3.eth.get_balance(account.address)}")
+
 
 if __name__ == "__main__":
-    main()
+    test_signer()

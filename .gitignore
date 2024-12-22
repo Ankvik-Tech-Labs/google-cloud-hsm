@@ -108,7 +108,7 @@ ENV/
 .DS_Store
 .vscode/
 
-# pdm 
+# pdm
 .pdm-python
 
 # ruff
@@ -116,3 +116,5 @@ ENV/
 # ignore the _version.py file generated from hatch-vcs
 _version.py
 .env
+.idea/
+*.pem

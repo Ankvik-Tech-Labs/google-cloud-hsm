@@ -163,14 +163,16 @@ exclude_lines = [
 
 # Default env dendencies
 [tool.hatch.envs.default]
-dependencies = [
+# https://hatch.pypa.io/1.12/config/environment/overview/#dependencies
+extra-dependencies = [
   "pydantic",
   "google-cloud-kms",
   "eth-account",
   "eth-utils",
   "eth-keys",
   "ecdsa[gmpy2]",
-  "python-dotenv"
+  "python-dotenv",
+  "rich"
 ]
 installer = "uv" # or "pip"
 post-install-commands = ["pre-commit install"]
