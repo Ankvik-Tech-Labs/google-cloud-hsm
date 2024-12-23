@@ -237,7 +237,7 @@ def main():
     tx = {
         "chain_id": w3.eth.chain_id,
         "nonce": w3.eth.get_transaction_count(account.address),
-        "value": 1,
+        "value": w3.to_wei(0.000001, 'ether'),
         "data": "0x00",
         "receiver": "0xa5D3241A1591061F2a4bB69CA0215F66520E67cf",
         "type": 0,

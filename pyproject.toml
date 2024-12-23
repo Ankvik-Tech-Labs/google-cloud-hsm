@@ -176,6 +176,7 @@ extra-dependencies = [
 ]
 installer = "uv" # or "pip"
 post-install-commands = ["pre-commit install"]
+python = "3.10"
 
 [project.optional-dependencies]
 dev = [
