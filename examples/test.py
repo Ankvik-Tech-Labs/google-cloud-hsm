@@ -1,107 +1,171 @@
+import os
+
+from dotenv import load_dotenv
+from eth_utils import keccak, to_checksum_address
+from google.cloud import kms_v1
+from google.cloud.kms_v1 import Digest
+from web3 import Web3
+from eth_account.messages import encode_defunct
+from eth_account import Account
 from google.cloud import kms
-from web3.auto import w3
-from eth_keys import keys
-from eth_utils import keccak
 import base64
 import hashlib
+from eth_account.messages import encode_defunct
+from eth_utils import keccak, to_bytes, to_hex
+from coincurve.utils import hex_to_bytes
 
-class GcpKeyRingRef:
-    def __init__(self, project_id, location, key_ring):
-        self.project_id = project_id
-        self.location = location
-        self.key_ring = key_ring
+# Load environment variables from .env file
+load_dotenv()
 
-    def to_google_ref(self):
-        return f"projects/{self.project_id}/locations/{self.location}/keyRings/{self.key_ring}"
+PROJECT_ID = os.environ["GOOGLE_CLOUD_PROJECT"],
+LOCATION_ID = os.environ["GOOGLE_CLOUD_REGION"],
+KEY_RING_ID = os.environ["KEY_RING"],
+KEY_ID = os.environ["KEY_NAME"]
 
-    def to_key_version_ref(self, key_id, key_version):
-        return f"{self.to_google_ref()}/cryptoKeys/{key_id}/cryptoKeyVersions/{key_version}"
 
-class GcpKmsProvider:
-    def __init__(self, kms_key_ref: GcpKeyRingRef):
+class EthereumHSMSigner:
+    def __init__(
+        self,
+        project_id: str,
+        location_id: str,
+        key_ring_id: str,
+        key_id: str,
+        version_id: str
+    ):
         self.client = kms.KeyManagementServiceClient()
-        self.kms_key_ref = kms_key_ref
+        self.key_version_name = self.client.crypto_key_version_path(
+            project_id, location_id, key_ring_id, key_id, version_id
+        )
 
-    def get_verifying_key(self, key_id, key_version):
-        key_version_ref = self.kms_key_ref.to_key_version_ref(key_id, key_version)
-        response = self.client.get_public_key(request={"name": key_version_ref})
-        pem_key = response.pem
-        # Load the public key from PEM format
-        print(pem_key)
-        verifying_key = keys.PublicKey.from_compressed_bytes(bytes.fromhex(pem_key))
-        return verifying_key
+    def crc32c(self, data: bytes) -> int:
+        """Calculate CRC32C checksum"""
+        import crcmod
+        crc32c_fun = crcmod.predefined.mkPredefinedCrcFun("crc-32c")
+        return crc32c_fun(data)
 
-    def sign_digest(self, key_id, key_version, digest):
-        key_version_ref = self.kms_key_ref.to_key_version_ref(key_id, key_version)
-        digest_bytes = hashlib.sha256(digest).digest()
+    def prepare_message(self, message: str) -> bytes:
+        """Prepare Ethereum message for signing"""
+        # Encode message according to EIP-191
+        encoded_message = encode_defunct(text=message)
+        # Hash the encoded message
+        message_hash = keccak(encoded_message.body)
+        return message_hash
 
-        response = self.client.asymmetric_sign(
+    def sign_ethereum_message(self, message: str) -> dict:
+        """Sign an Ethereum message using GCP HSM"""
+        # Prepare the message hash
+        message_hash = self.prepare_message(message)
+
+        # Create the sign request
+        digest = {"sha256": message_hash}
+        digest_crc32c = self.crc32c(message_hash)
+
+        # Sign using GCP KMS
+        sign_response = self.client.asymmetric_sign(
             request={
-                "name": key_version_ref,
-                "digest": {"sha256": digest_bytes},
+                "name": self.key_version_name,
+                "digest": digest,
+                "digest_crc32c": digest_crc32c,
             }
         )
-        signature = response.signature
-        return signature
 
-class GcpKmsSigner:
-    def __init__(self, provider: GcpKmsProvider, key_id, key_version, chain_id):
-        self.provider = provider
-        self.key_id = key_id
-        self.key_version = key_version
-        self.chain_id = chain_id
-        self.verifying_key = provider.get_verifying_key(key_id, key_version)
+        # Verify response integrity
+        if not sign_response.verified_digest_crc32c:
+            raise Exception("Request corrupted in-transit")
+        if not sign_response.name == self.key_version_name:
+            raise Exception("Key name mismatch")
+        if not sign_response.signature_crc32c == self.crc32c(sign_response.signature):
+            raise Exception("Response corrupted in-transit")
 
-    def verifying_key_to_address(self):
-        uncompressed_key = self.verifying_key.to_bytes()
-        address_bytes = keccak(uncompressed_key[1:])[12:]
-        return w3.toChecksumAddress(address_bytes.hex())
+        # Convert DER signature to R,S format
+        der_sig = sign_response.signature
+        r_length = der_sig[3]
+        r = int.from_bytes(der_sig[4:4 + r_length], byteorder='big')
+        s_length = der_sig[5 + r_length]
+        s = int.from_bytes(der_sig[6 + r_length:6 + r_length + s_length], byteorder='big')
 
-    def apply_eip155(self, sig_v):
-        return (self.chain_id * 2 + 35) + sig_v
+        # Format signature components
+        r_hex = hex(r)[2:].zfill(64)
+        s_hex = hex(s)[2:].zfill(64)
 
-    def sign_digest(self, digest):
-        signature = self.provider.sign_digest(self.key_id, self.key_version, digest)
-        r, s, v = self._recover_signature_parts(signature, digest)
-        v = self.apply_eip155(v)
-        return {"r": r, "s": s, "v": v}
+        return {
+            'message_hash': to_hex(message_hash),
+            'r': r_hex,
+            's': s_hex,
+            'signature': f"0x{r_hex}{s_hex}"
+        }
 
-    def _recover_signature_parts(self, signature, digest):
-        # Recover r and s from the DER-encoded signature
-        r, s = keys.Signature.from_bytes(signature).rs
-        v = 0  # Adjust if needed for recovery ID
-        return int(r), int(s), v
+    def sign_ethereum_transaction(self, transaction_dict: dict) -> dict:
+        """Sign an Ethereum transaction using GCP HSM"""
+        # Encode transaction according to EIP-155
+        # This is a simplified version - you'll need to implement proper RLP encoding
+        transaction_bytes = to_bytes(hexstr=transaction_dict['raw'])
+        transaction_hash = keccak(transaction_bytes)
 
-    def sign_message(self, message):
-        message_hash = keccak(text=message)
-        return self.sign_digest(message_hash)
+        # Rest of the signing process is similar to message signing
+        digest = {"sha256": transaction_hash}
+        digest_crc32c = self.crc32c(transaction_hash)
 
-# Example Usage
+        sign_response = self.client.asymmetric_sign(
+            request={
+                "name": self.key_version_name,
+                "digest": digest,
+                "digest_crc32c": digest_crc32c,
+            }
+        )
+
+        # Similar verification and conversion process as message signing
+        # You'll need to implement proper signature encoding for transactions
+
+        return {
+            'transaction_hash': to_hex(transaction_hash),
+            'signature': to_hex(sign_response.signature)
+        }
+
+
+# Example usage:
 if __name__ == "__main__":
-    import os
-    from dotenv import load_dotenv
+    signer = EthereumHSMSigner(
+        project_id=PROJECT_ID[0],
+        location_id=LOCATION_ID[0],
+        key_ring_id=KEY_RING_ID[0],
+        key_id=KEY_ID,
+        version_id="1"
+    )
 
-    load_dotenv()
-
-    # Set up environment variables or hard-code them
-    project_id = "hsm-testing-445507" # os.getenv("GOOGLE_PROJECT_ID")
-    location = os.getenv("GOOGLE_CLOUD_REGION")
-    key_ring = os.getenv("KEY_RING")
-    key_name = os.getenv("KEY_NAME")
-
-    key_ref = GcpKeyRingRef(project_id, location, key_ring)
-    provider = GcpKmsProvider(key_ref)
-    signer = GcpKmsSigner(provider, key_name, 1, 1)
-
+    # Sign a message
     message = "Hello, Ethereum!"
-    signature = signer.sign_message(message)
-    address = signer.verifying_key_to_address()
+    signature = signer.sign_ethereum_message(message)
+    print(f"Message signature: {signature}")
 
-    print(f"Message: {message}")
-    print(f"Signature: {signature}")
-    print(f"Address: {address}")
+    # Sign a transaction
+    transaction = {
+        'raw': '0x...',  # Your raw transaction here
+        'nonce': 0,
+        'gasPrice': 20000000000,
+        'gas': 21000,
+        'to': '0x...',
+        'value': 1000000000000000000,
+        'data': ''
+    }
+    tx_signature = signer.sign_ethereum_transaction(transaction)
+    print(f"Transaction signature: {tx_signature}")
 
-"""
-Transaction hash: 0xebfea470b1694d3c77ca65dbd5f99fd0b930c268fcb140eecc3a8dc8270f9d69
-Sender address: 0x0545640a0ecd6fb6ae94766811f30dcda4746dfc
-"""
+
+
+# # Example transaction
+# tx = {
+#     'to': '0xReceiverAddress',
+#     'value': web3.to_wei(0.1, 'ether'),
+#     'gas': 2000000,
+#     'gasPrice': web3.to_wei('50', 'gwei'),
+#     'nonce': web3.eth.get_transaction_count(address),
+#     'chainId': chain_id
+# }
+#
+# # Sign the transaction
+# signed_tx = web3.eth.account.sign_transaction(tx, private_key=signature)
+#
+# # Send the transaction
+# tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+# print(f"Transaction sent: {tx_hash.hex()}")

@@ -1,4 +1,5 @@
 """Cryptographic utilities."""
+
 import ecdsa
 from eth_keys import KeyAPI
 from eth_typing import Hash32
@@ -17,8 +18,8 @@ def normalize_signature(der_sig: bytes) -> tuple[bytes, bytes]:
         s = SECP256K1_N - s
 
     # Convert to bytes
-    r_bytes = r.to_bytes(32, 'big')
-    s_bytes = s.to_bytes(32, 'big')
+    r_bytes = r.to_bytes(32, "big")
+    s_bytes = s.to_bytes(32, "big")
 
     return r_bytes, s_bytes
 
@@ -29,7 +30,7 @@ def recover_public_key(msg_hash: Hash32, r: bytes, s: bytes, expected_key: bytes
     expected = keys.PublicKey(expected_key)
 
     for v in (0, 1):
-        sig = keys.Signature(vrs=(v, int.from_bytes(r, 'big'), int.from_bytes(s, 'big')))
+        sig = keys.Signature(vrs=(v, int.from_bytes(r, "big"), int.from_bytes(s, "big")))
         try:
             recovered = sig.recover_public_key_from_msg_hash(msg_hash)
             if recovered == expected:

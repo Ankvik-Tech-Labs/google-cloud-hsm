@@ -1,12 +1,15 @@
 """KMS provider implementation."""
+
 import base64
 from dataclasses import dataclass
+
 from google.cloud.kms_v1 import KeyManagementServiceClient
 
 
 @dataclass
 class KmsKeyRef:
     """Reference to a KMS key."""
+
     project_id: str
     location: str
     key_ring: str
@@ -32,10 +35,7 @@ class KmsProvider:
         key_path = self.key_ref.to_key_version_ref(key_id, key_version)
 
         # Add request headers for routing
-        request = {
-            "name": key_path,
-            "x-goog-request-params": f"name={key_path}"
-        }
+        request = {"name": key_path, "x-goog-request-params": f"name={key_path}"}
 
         response = self.client.get_public_key(request=request)
         return base64.b64decode(response.pem)
@@ -45,11 +45,7 @@ class KmsProvider:
         key_path = self.key_ref.to_key_version_ref(key_id, key_version)
 
         # Add request headers for routing
-        request = {
-            "name": key_path,
-            "digest": {"sha256": digest},
-            "x-goog-request-params": f"name={key_path}"
-        }
+        request = {"name": key_path, "digest": {"sha256": digest}, "x-goog-request-params": f"name={key_path}"}
 
         response = self.client.asymmetric_sign(request=request)
         return response.signature

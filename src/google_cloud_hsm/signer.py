@@ -110,4 +110,4 @@ class GoogleHSMSigner:
     #
     #     except Exception as e:
     #         msg = f"Failed to sign transaction: {e!s}"
-    #         raise SigningError(msg)  # noqa: B904
+    #         raise SigningError(msg)
