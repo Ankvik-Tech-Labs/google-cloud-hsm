@@ -1,25 +1,40 @@
-from pydantic import BaseModel, Field
+import os
+
+import dotenv
+from pydantic_settings import BaseSettings
+
+dotenv.load_dotenv()
 
 
-class GoogleHSMConfig(BaseModel):
-    """Configuration for Google Cloud HSM."""
+class BaseConfig(BaseSettings):
+    """Application settings loaded from environment variables."""
 
-    project_id: str = Field(..., description="Google Cloud project ID")
-    location_id: str = Field(default="us-east1", description="Cloud KMS location")
-    key_ring_id: str = Field(..., description="ID of the key ring")
-    key_id: str = Field(..., description="ID of the key")
-    key_version: int = Field(default=1, description="Version of the key")
-    chain_id: int = Field(default=1, description="Ethereum chain ID")
+    # Google Cloud settings
+    project_id: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
+    location_id: str = os.getenv("GOOGLE_CLOUD_REGION", "")
+    key_ring_id: str = os.getenv("KEY_RING", "")
+    key_id: str = os.getenv("KEY_NAME", "")
 
-    @property
-    def key_path(self) -> str:
-        """Full path to the key."""
-        return (
-            f"projects/{self.project_id}/locations/{self.location_id}/"
-            f"keyRings/{self.key_ring_id}/cryptoKeys/{self.key_id}"
-        )
+    # Web3 settings
+    web3_provider_uri: str = os.getenv("WEB3_PROVIDER_URI", "http://localhost:8545")
 
-    @property
-    def version_path(self) -> str:
-        """Full path to specific key version."""
-        return f"{self.key_path}/cryptoKeyVersions/{self.key_version}"
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._validate_settings()
+
+    def _validate_settings(self):
+        """Validate that all required settings are present."""
+        missing_vars = []
+        required_vars = {
+            "project_id": self.project_id,
+            "location_id": self.location_id,
+            "key_ring_id": self.key_ring_id,
+            "key_id": self.key_id,
+        }
+
+        for var_name, var_value in required_vars.items():
+            if not var_value:
+                missing_vars.append(var_name)
+
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
