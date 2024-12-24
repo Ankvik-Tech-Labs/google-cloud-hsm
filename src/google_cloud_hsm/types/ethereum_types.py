@@ -1,6 +1,9 @@
-
-from eth_utils import is_address, to_checksum_address
+from eth_account import Account
+from eth_account._utils.legacy_transactions import encode_transaction, serializable_unsigned_transaction_from_dict
+from eth_utils import is_address, to_checksum_address, to_int
 from pydantic import BaseModel, Field, field_validator
+
+from google_cloud_hsm.exceptions import SignatureError
 
 
 class Signature(BaseModel):
@@ -98,15 +101,44 @@ class Transaction(BaseModel):
             )
 
         return cls(
-            chain_id=data["chainId"],
+            chain_id=data["chain_id"],
             nonce=data["nonce"],
-            gas_price=data["gasPrice"],
-            gas_limit=data["gas"],
+            gas_price=data["gas_price"],
+            gas_limit=data["gas_limit"],
             to=data["to"],
             value=data["value"],
             data=data.get("data", "0x"),
             signature=signature,
         )
 
+    def serialize_transaction(self) -> bytes:
+        """
+        Serialize a transaction to bytes.
+
+        Returns:
+            bytes
+        """
+        if not self.signature:
+            raise SignatureError("The transaction is not signed.")
+
+        txn_data: dict = self.to_dict()
+
+        if txn_data.get("sender"):
+            del txn_data["sender"]
+        unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
+        signature = (
+            self.signature.v,
+            to_int(self.signature.r),
+            to_int(self.signature.s),
+        )
+
+        signed_txn = encode_transaction(unsigned_txn, signature)
+
+        if self.sender and Account.recover_transaction(signed_txn) != self.sender:
+            raise SignatureError("Recovered signer doesn't match sender!")
+
+        return signed_txn
+
+    # Needed for bytes fields
     class Config:
-        arbitrary_types_allowed = True  # Needed for bytes fields
+        arbitrary_types_allowed = True
