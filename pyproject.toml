@@ -166,12 +166,14 @@ exclude_lines = [
 # https://hatch.pypa.io/1.12/config/environment/overview/#dependencies
 extra-dependencies = [
   "pydantic",
+  "pydantic-settings",
   "google-cloud-kms",
   "eth-account",
   "eth-utils",
   "eth-keys",
   "ecdsa[gmpy2]",
   "python-dotenv",
+  "cryptography",
   "rich"
 ]
 installer = "uv" # or "pip"
@@ -241,7 +243,7 @@ build-check = [
 dependencies = [
   "pytest",
   "pytest-cov",
-  "eth-account"
+  "web3"
 ]
 
 [tool.pytest.ini_options]
@@ -261,8 +263,6 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-
-
 
 
 

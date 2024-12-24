@@ -1,15 +1,17 @@
+"""Ethereum type definitions."""
+
 from eth_account import Account
 from eth_account._utils.legacy_transactions import (
     encode_transaction,  # noqa: PLC2701
     serializable_unsigned_transaction_from_dict,  # noqa: PLC2701
 )
 from eth_utils import is_address, to_checksum_address, to_int
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from google_cloud_hsm.accounts.gcp_kms_account import MSG_HASH_LENGTH
 from google_cloud_hsm.exceptions import SignatureError
 
 SIGNATURE_LENGTH: int = 65
+MSG_HASH_LENGTH: int = 32
 
 
 class Signature(BaseModel):
@@ -54,14 +56,16 @@ class Signature(BaseModel):
 class Transaction(BaseModel):
     """Represents an Ethereum transaction."""
 
-    chain_id: int = Field(..., description="Chain ID")
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
+
+    chain_id: int = Field(..., description="Chain ID", validation_alias="chainId")
     nonce: int = Field(..., ge=0, description="Transaction nonce")
-    gas_price: int = Field(..., gt=0, description="Gas price in Wei")
-    gas_limit: int = Field(..., gt=0, description="Gas limit")
+    gas_price: int = Field(..., gt=0, description="Gas price in Wei", validation_alias="gasPrice")
+    gas_limit: int = Field(..., gt=0, description="Gas limit", validation_alias="gas")
     to: str = Field(..., description="Recipient address")
     value: int = Field(..., ge=0, description="Transaction value in Wei")
     data: str = Field("0x", description="Transaction data")
-    from_: str = Field(..., alias="from", description="Sender address")
+    from_: str = Field(..., description="Sender address", validation_alias="from")
     signature: Signature | None = Field(None, description="Transaction signature")
 
     @field_validator("to", "from_")
@@ -96,9 +100,27 @@ class Transaction(BaseModel):
             "data": self.data,
             "from": self.from_,
         }
+        return tx_dict
+
+    def to_transaction_dict(self) -> dict:
+        """Convert to dictionary format suitable for signing."""
+        tx_dict = {
+            "chainId": self.chain_id,
+            "nonce": self.nonce,
+            "gasPrice": self.gas_price,
+            "gas": self.gas_limit,
+            "to": self.to,
+            "value": self.value,
+            "data": self.data,
+        }
+        # Add signature if present
         if self.signature:
             tx_dict.update(
-                {"v": self.signature.v, "r": "0x" + self.signature.r.hex(), "s": "0x" + self.signature.s.hex()}
+                {
+                    "v": self.signature.v,
+                    "r": int.from_bytes(self.signature.r, "big"),
+                    "s": int.from_bytes(self.signature.s, "big"),
+                }
             )
         return tx_dict
 
@@ -108,7 +130,7 @@ class Transaction(BaseModel):
         Create transaction from dictionary.
 
         Args:
-            data: Transaction data dictionary. Must contain either 'from' or 'from_' field.
+            data: Transaction data dictionary.
 
         Returns:
             Transaction: A new transaction instance
@@ -118,22 +140,19 @@ class Transaction(BaseModel):
         """
         tx_data = data.copy()
 
-        # Handle alternative field names and convert to our format
-        if "from" in tx_data:
-            tx_data["from_"] = tx_data.pop("from")
-        if "gas" in tx_data:
-            tx_data["gas_limit"] = tx_data.pop("gas")
-        if "gasPrice" in tx_data:
-            tx_data["gas_price"] = tx_data.pop("gasPrice")
-
         # Handle signature if present
         signature = None
         if all(k in tx_data for k in ["v", "r", "s"]):
-            signature = Signature(
-                v=tx_data.pop("v"),
-                r=bytes.fromhex(tx_data.pop("r")[2:] if tx_data["r"].startswith("0x") else tx_data["r"]),
-                s=bytes.fromhex(tx_data.pop("s")[2:] if tx_data["s"].startswith("0x") else tx_data["s"]),
-            )
+            r_value = tx_data.pop("r")
+            s_value = tx_data.pop("s")
+
+            # Convert hex strings to bytes if necessary
+            if isinstance(r_value, str):
+                r_value = bytes.fromhex(r_value[2:] if r_value.startswith("0x") else r_value)
+            if isinstance(s_value, str):
+                s_value = bytes.fromhex(s_value[2:] if s_value.startswith("0x") else s_value)
+
+            signature = Signature(v=tx_data.pop("v"), r=r_value, s=s_value)
             tx_data["signature"] = signature
 
         return cls(**tx_data)
@@ -152,24 +171,22 @@ class Transaction(BaseModel):
             msg = "The transaction is not signed."
             raise SignatureError(msg)
 
-        txn_data: dict = self.to_dict()
+        # Create transaction dict without 'from' and with proper signature format
+        txn_data = self.to_dict()
 
-        if txn_data.get("sender"):
-            del txn_data["sender"]
+        if "from" in txn_data:
+            txn_data.pop("from")
+
+        # Create unsigned transaction dict
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
-        signature = (
-            self.signature.v,
-            to_int(self.signature.r),
-            to_int(self.signature.s),
-        )
+        signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
 
         signed_txn = encode_transaction(unsigned_txn, signature)
 
-        if self.from_ and Account.recover_transaction(signed_txn) != self.from_:
-            msg = "Recovered signer doesn't match sender!"
+        # Verify signature
+        recovered = Account.recover_transaction(signed_txn)
+        if self.from_ and recovered.lower() != self.from_.lower():
+            msg = f"Recovered signer doesn't match sender! Expected: {self.from_}, got: {recovered}"
             raise SignatureError(msg)
 
         return signed_txn
-
-    class Config:
-        arbitrary_types_allowed = True  # Needed for bytes fields

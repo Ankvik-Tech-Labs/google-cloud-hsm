@@ -1,9 +1,9 @@
 import dotenv
 from eth_account.messages import encode_defunct
-from google_cloud_hsm.types.ethereum_types import Signature, Transaction
 from web3 import Web3
 
 from google_cloud_hsm.accounts.gcp_kms_account import GCPKmsAccount
+from google_cloud_hsm.types.ethereum_types import Signature, Transaction
 
 if __name__ == "__main__":
     from rich.console import Console
