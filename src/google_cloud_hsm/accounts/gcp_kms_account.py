@@ -1,17 +1,21 @@
 from functools import cached_property
+from typing import Any, cast
 
-import rlp
+import rlp  # type: ignore
 from eth_account import Account
-from eth_account._utils.legacy_transactions import serializable_unsigned_transaction_from_dict
-from eth_account.messages import _hash_eip191_message, encode_defunct
+from eth_account._utils.legacy_transactions import serializable_unsigned_transaction_from_dict  # noqa: PLC2701
+from eth_account.messages import _hash_eip191_message, encode_defunct  # noqa: PLC2701
 from eth_typing import ChecksumAddress
 from eth_utils import keccak, to_checksum_address
 from google.cloud import kms
 from pydantic import BaseModel, Field, PrivateAttr
 
 from google_cloud_hsm.config import BaseConfig
+from google_cloud_hsm.exceptions import SignatureError
 from google_cloud_hsm.types.ethereum_types import Signature, Transaction
 from google_cloud_hsm.utils import convert_der_to_rsv, extract_public_key_bytes
+
+MSG_HASH_LENGTH: int = 32
 
 
 class GCPKmsAccount(BaseModel):
@@ -25,7 +29,7 @@ class GCPKmsAccount(BaseModel):
     _cached_public_key: bytes | None = PrivateAttr(default=None)
     _settings: BaseConfig = PrivateAttr()
 
-    def __init__(self, **data):
+    def __init__(self, **data: Any):
         super().__init__(**data)
         self._client = kms.KeyManagementServiceClient()
         self._settings = BaseConfig()
@@ -47,7 +51,8 @@ class GCPKmsAccount(BaseModel):
         if self._cached_public_key is None:
             response = self._client.get_public_key({"name": self.key_path})
             if not response.pem:
-                raise ValueError("No PEM data in response")
+                msg = "No PEM data in response"
+                raise ValueError(msg)
 
             self._cached_public_key = extract_public_key_bytes(response.pem)
         return self._cached_public_key
@@ -63,7 +68,8 @@ class GCPKmsAccount(BaseModel):
             response = self._client.asymmetric_sign(request={"name": self.key_path, "digest": {"sha256": msghash}})
             return response.signature
         except Exception as e:
-            raise Exception(f"Signing error: {e}")
+            msg = f"Signing error: {e}"
+            raise Exception(msg) from e
 
     def sign_message(self, message: str | bytes) -> Signature:
         """
@@ -88,26 +94,23 @@ class GCPKmsAccount(BaseModel):
         elif isinstance(message, bytes):
             hash_message = encode_defunct(primitive=message)
         else:
-            raise TypeError(f"Unsupported message type: {type(message)}")
+            msg = f"Unsupported message type: {type(message)}"
+            raise TypeError(msg)
 
         # Sign message hash
         msghash = _hash_eip191_message(hash_message)
-        if len(msghash) != 32:
-            raise ValueError("Invalid message hash length")
+        if len(msghash) != MSG_HASH_LENGTH:
+            msg = "Invalid message hash length"
+            raise ValueError(msg)
 
         der_signature = self._sign_raw_hash(msghash)
         if not der_signature:
-            raise Exception("Failed to sign message")
+            msg = "Failed to sign message"
+            raise Exception(msg)
 
         # Convert to RSV format with v = 27
         sig_dict = convert_der_to_rsv(der_signature, 27)
         signature = Signature(v=sig_dict["v"], r=sig_dict["r"], s=sig_dict["s"])
-
-        # # Verify recovery and try alternative v value if needed
-        # recovered = self._w3.eth.account.recover_message(hash_message, vrs=(signature.v, signature.r, signature.s))
-        #
-        # if recovered.lower() != self.address.lower():
-        #     signature.v += 1
 
         return signature
 
@@ -119,7 +122,7 @@ class GCPKmsAccount(BaseModel):
             transaction: Transaction to sign
 
         Returns:
-            Optional[bytes]: Serialized signed transaction or None if signing fails
+            bytes | None: Serialized signed transaction or None if signing fails
         """
         # Create unsigned transaction dictionary
         unsigned_tx = {
@@ -133,7 +136,7 @@ class GCPKmsAccount(BaseModel):
         }
 
         # Convert to UnsignedTransaction and get hash
-        unsigned_tx_obj = serializable_unsigned_transaction_from_dict(unsigned_tx)
+        unsigned_tx_obj = serializable_unsigned_transaction_from_dict(unsigned_tx)  # type: ignore
         msg_hash = unsigned_tx_obj.hash()
 
         # Sign the transaction hash
@@ -158,19 +161,20 @@ class GCPKmsAccount(BaseModel):
             int.from_bytes(sig_dict["s"], "big"),
         ]
 
-        # RLP encode the transaction
-        encoded_tx = rlp.encode(rlp_data)
+        # RLP encode the transaction and ensure it returns bytes
+        encoded_tx = cast(bytes, rlp.encode(rlp_data))
 
         # Verify the signature
         recovered = Account.recover_transaction(encoded_tx)
         if recovered.lower() != self.address.lower():
             # Try with v + 1
             rlp_data[6] = sig_dict["v"] + 1  # Update v value
-            encoded_tx = rlp.encode(rlp_data)
+            encoded_tx = cast(bytes, rlp.encode(rlp_data))
 
             # Verify again
             recovered = Account.recover_transaction(encoded_tx)
             if recovered.lower() != self.address.lower():
-                raise ValueError("Failed to create valid signature")
+                msg = "Failed to create valid signature"
+                raise SignatureError(msg)
 
         return encoded_tx

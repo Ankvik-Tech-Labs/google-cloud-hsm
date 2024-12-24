@@ -61,6 +61,7 @@ if __name__ == "__main__":
 
     # Now create and sign a transaction from our GCP KMS account
     tx = {
+        "from": funded_account.address,
         "chain_id": w3.eth.chain_id,
         "nonce": w3.eth.get_transaction_count(account.address),
         "value": w3.to_wei(0.000001, "ether"),

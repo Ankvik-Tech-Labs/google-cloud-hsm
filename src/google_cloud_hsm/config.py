@@ -1,12 +1,13 @@
 import os
+from typing import Any
 
 import dotenv
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings  # type: ignore
 
 dotenv.load_dotenv()
 
 
-class BaseConfig(BaseSettings):
+class BaseConfig(BaseSettings):  # type: ignore
     """Application settings loaded from environment variables."""
 
     # Google Cloud settings
@@ -18,11 +19,11 @@ class BaseConfig(BaseSettings):
     # Web3 settings
     web3_provider_uri: str = os.getenv("WEB3_PROVIDER_URI", "http://localhost:8545")
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self._validate_settings()
 
-    def _validate_settings(self):
+    def _validate_settings(self) -> None:
         """Validate that all required settings are present."""
         missing_vars = []
         required_vars = {
@@ -37,4 +38,5 @@ class BaseConfig(BaseSettings):
                 missing_vars.append(var_name)
 
         if missing_vars:
-            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+            msg = f"Missing required environment variables: {', '.join(missing_vars)}"
+            raise ValueError(msg)
