@@ -5,27 +5,11 @@ from web3 import Web3
 
 from google_cloud_hsm.accounts.gcp_kms_account import GCPKmsAccount
 
-# Check required environment variables
-REQUIRED_ENV_VARS = {
-    "GOOGLE_CLOUD_PROJECT": os.getenv("GOOGLE_CLOUD_PROJECT"),
-    "GOOGLE_CLOUD_REGION": os.getenv("GOOGLE_CLOUD_REGION"),
-    "KEY_RING": os.getenv("KEY_RING"),
-    "KEY_NAME": os.getenv("KEY_NAME"),
-    "JSON_RPC_BASE": os.getenv("JSON_RPC_BASE", "http://localhost:8545"),
-}
-
-# Skip all tests if any required env var is missing
-missing_vars = [k for k, v in REQUIRED_ENV_VARS.items() if not v]
-pytestmark = pytest.mark.skipif(
-    bool(missing_vars),
-    reason=f"Missing required environment variables: {', '.join(missing_vars)}"
-)
-
 
 @pytest.fixture(scope="module")
 def web3():
     """Initialize Web3 instance."""
-    return Web3(Web3.HTTPProvider(REQUIRED_ENV_VARS["JSON_RPC_BASE"]))
+    return Web3(Web3.HTTPProvider(os.getenv("JSON_RPC_BASE", "http://localhost:8545")))
 
 
 @pytest.fixture(scope="module")

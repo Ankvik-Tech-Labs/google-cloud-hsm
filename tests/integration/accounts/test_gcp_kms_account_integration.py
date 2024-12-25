@@ -1,6 +1,26 @@
+import os
+
+import pytest
 from google_cloud_hsm import Transaction
 from eth_account.messages import encode_defunct
 from hexbytes import HexBytes
+
+
+# Check required environment variables
+REQUIRED_ENV_VARS = {
+    "GOOGLE_CLOUD_PROJECT": os.getenv("GOOGLE_CLOUD_PROJECT"),
+    "GOOGLE_CLOUD_REGION": os.getenv("GOOGLE_CLOUD_REGION"),
+    "KEY_RING": os.getenv("KEY_RING"),
+    "KEY_NAME": os.getenv("KEY_NAME"),
+    "JSON_RPC_BASE": os.getenv("JSON_RPC_BASE", "http://localhost:8545"),
+}
+
+# Skip all tests if any required env var is missing
+missing_vars = [k for k, v in REQUIRED_ENV_VARS.items() if not v]
+pytestmark = pytest.mark.skipif(
+    bool(missing_vars),
+    reason=f"Missing required environment variables: {', '.join(missing_vars)}"
+)
 
 def test_account_initialization(gcp_account):
     """Test initializing account with real GCP KMS."""
