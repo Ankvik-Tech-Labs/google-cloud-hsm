@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Lint fixed and mypy errors fixed
+- Fixing pre-commit errors again again again :(
+- Fixing skip integration tests if no env vars are set
 
 ### 📚 Documentation
 
