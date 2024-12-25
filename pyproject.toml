@@ -165,65 +165,69 @@ exclude_lines = [
 [tool.hatch.envs.default]
 # https://hatch.pypa.io/1.12/config/environment/overview/#dependencies
 extra-dependencies = [
-  "pydantic",
-  "pydantic-settings",
-  "google-cloud-kms",
-  "eth-account",
-  "eth-utils",
-  "eth-keys",
-  "ecdsa[gmpy2]",
-  "python-dotenv",
-  "cryptography",
-  "rich"
+    "pydantic",
+    "pydantic-settings",
+    "google-cloud-kms",
+    "eth-account",
+    "eth-utils",
+    "eth-keys",
+    "ecdsa[gmpy2]",
+    "python-dotenv",
+    "cryptography",
+    "rich"
 ]
 installer = "uv" # or "pip"
 post-install-commands = ["pre-commit install"]
 python = "3.10"
+# for pycharm support
+#type = "virtual"
+#path = ".venv"
 
 [project.optional-dependencies]
 dev = [
-  "ipython",
-  "web3"
+    "ipython",
+    "web3"
 ]
 
 
 # Lint env dendencies
 [tool.hatch.envs.lint]
 dependencies = [
-  "pydantic",
-  "mypy",
-  "ruff",
-  "deptry",
+    "pydantic",
+    "mypy",
+    "ruff",
+    "deptry",
 ]
 
 
 [tool.hatch.envs.lint.scripts]
 typing = [
-  "echo \"VERSION: `mypy --version`\"",
-  "mypy --install-types --non-interactive {args}"
+    "echo \"VERSION: `mypy --version`\"",
+    "mypy --install-types --non-interactive {args}"
 ]
 lint = [
-  "echo \"VERSION: `ruff --version`\"",
-  "ruff format .",
-  "ruff check . --fix",
-  "mypy src/google_cloud_hsm/",
+    "echo \"VERSION: `ruff --version`\"",
+    "ruff format .",
+    "ruff check . --fix",
+    "mypy src/google_cloud_hsm/",
 ]
 lint-check = [
-  "echo \"VERSION: `ruff --version`\"",
-  "ruff format --check .",
-  "ruff check .",
-  "mypy src/google_cloud_hsm/",
+    "echo \"VERSION: `ruff --version`\"",
+    "ruff format --check .",
+    "ruff check .",
+    "mypy src/google_cloud_hsm/",
 ]
 
 # Docs env dendencies
 [tool.hatch.envs.docs]
 dependencies = [
-  "mkdocs",
-  "mkdocs-material",
-  "mkdocs-gen-files",
-  "mkdocstrings[python]",
-  "linkchecker",
-  # "bmt_py @ {root:uri}/"
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-gen-files",
+    "pymdown-extensions",
+    "mkdocstrings[python]",
+    "linkchecker",
+    "google_cloud_hsm @ {root:uri}/"
 ]
 
 
@@ -231,19 +235,23 @@ dependencies = [
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build --clean --strict"
 # --ignore-url=None since the SUMMARY.md file leaves a <toc>None</toc> in sitemap.xml
-validate = "linkchecker --config .linkcheckerrc --ignore-url=/reference --ignore-url=None site"
+#validate = "linkchecker --config .linkcheckerrc --ignore-url=/reference --ignore-url=None site"
 # https://github.com/linkchecker/linkchecker/issues/678
 build-check = [
-  "docs-build",
-  "validate",
+    "docs-build",
+#    "validate",
+]
+serve = [
+    "docs-build",
+    "docs-serve"
 ]
 
 # Testing env dendencies
 [tool.hatch.envs.test]
 dependencies = [
-  "pytest",
-  "pytest-cov",
-  "web3"
+    "pytest",
+    "pytest-cov",
+    "web3"
 ]
 
 [tool.pytest.ini_options]

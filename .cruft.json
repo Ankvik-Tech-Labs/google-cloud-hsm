@@ -16,7 +16,6 @@
       "docs_url": "https://Aviksaikat.github.io/google-cloud-hsm/",
       "open_source_license": "BSD license",
       "python_version": "3.10",
-      "asyncio": "Y",
       "pydantic": "Y",
       "codecov": "Y",
       "deptry": "Y",

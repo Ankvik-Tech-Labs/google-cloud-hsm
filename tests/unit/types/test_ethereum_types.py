@@ -137,7 +137,7 @@ class TestTransaction:
                 from_=test_address
             )
 
-    # ? Need proper tx signature for verification Skipping for now as other tests will cover it 
+    # ? Need proper tx signature for verification Skipping for now as other tests will cover it
     # def test_transaction_serialization(self, test_transaction, test_signature):
     #     """Test transaction serialization."""
     #     # Test without signature
@@ -153,7 +153,7 @@ class TestTransaction:
     #     """Test transaction signature verification."""
     #     test_transaction.signature = test_signature
     #     serialized = test_transaction.serialize_transaction()
-        
+
     #     # Recover signer from transaction
     #     recovered_address = web3.eth.account.recover_transaction(serialized)
     #     assert Web3.is_address(recovered_address)
@@ -161,13 +161,13 @@ class TestTransaction:
     def test_transaction_dict_conversion(self, test_transaction):
         """Test converting transaction to web3-compatible dict."""
         tx_dict = test_transaction.to_dict()
-        
+
         # Check field names
         assert "chainId" in tx_dict
         assert "gasPrice" in tx_dict
         assert "gas" in tx_dict
         assert "from" in tx_dict
-        
+
         # Check values
         assert tx_dict["chainId"] == test_transaction.chain_id
         assert tx_dict["gasPrice"] == test_transaction.gas_price
@@ -178,12 +178,12 @@ class TestTransaction:
         """Test transaction with attached signature."""
         test_transaction.signature = test_signature
         tx_dict = test_transaction
-        
+
         assert tx_dict.signature.v == test_signature.v
         assert tx_dict.signature.r.hex() == test_signature.r.hex()
         assert tx_dict.signature.s.hex() == test_signature.s.hex()
-    
-    
+
+
     def test_transaction_to_transaction_dict(self, test_transaction, test_signature):
         """Test converting transaction to signing format."""
         # Test without signature
@@ -192,7 +192,7 @@ class TestTransaction:
         assert "v" not in tx_dict
         assert "r" not in tx_dict
         assert "s" not in tx_dict
-        
+
         # Test with signature
         test_transaction.signature = test_signature
         tx_dict = test_transaction.to_transaction_dict()

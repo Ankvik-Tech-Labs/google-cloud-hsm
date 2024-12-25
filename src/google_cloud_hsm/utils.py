@@ -4,7 +4,7 @@ import ecdsa  # type: ignore
 
 # from ape.api.transactions import TransactionAPI
 # from ape.types import MessageSignature
-from cryptography.hazmat.primitives import serialization  # type: ignore
+from cryptography.hazmat.primitives import serialization
 
 # from eth_account.messages import encode_defunct
 # from web3 import Web3
@@ -35,7 +35,7 @@ def extract_public_key_bytes(pem_str: str) -> bytes:
         raw_bytes = public_key.public_bytes(
             encoding=serialization.Encoding.X962, format=serialization.PublicFormat.UncompressedPoint
         )
-        return raw_bytes[-64:]  # type: ignore
+        return raw_bytes[-64:]
     except Exception as err:
         msg = "Invalid PEM format"
         raise ValueError(msg) from err

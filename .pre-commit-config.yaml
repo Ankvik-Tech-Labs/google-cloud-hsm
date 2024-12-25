@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.5.0
+  rev: v5.0.0
   hooks:
   - id: trailing-whitespace
   - id: check-added-large-files
@@ -20,15 +20,17 @@ repos:
 
 # Ruff replaces black, flake8, autoflake, isort and more
 - repo: https://github.com/charliermarsh/ruff-pre-commit
-  rev: 'v0.3.4'  # make sure this is always consistent with hatch configs
+  rev: 'v0.8.4'
   hooks:
     - id: ruff
+      args: [ --fix ]
     - id: ruff-format
-      args: [--check, --config, ./pyproject.toml]
+      args: [--config, ./pyproject.toml]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: 'v1.9.0'  # make sure this is always consistent with hatch configs
+  rev: 'v1.14.0'
   hooks:
     - id: mypy
       args: ["--install-types", "--non-interactive"]
-      additional_dependencies: [types-tabulate, types-cachetools]
+      files: ^(google_cloud_hsm/)
+      additional_dependencies: [types-tabulate, types-cachetools, "pydantic>=1.10.4"]

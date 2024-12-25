@@ -2,12 +2,12 @@ import os
 from typing import Any
 
 import dotenv
-from pydantic_settings import BaseSettings  # type: ignore
+from pydantic_settings import BaseSettings
 
 dotenv.load_dotenv()
 
 
-class BaseConfig(BaseSettings):  # type: ignore
+class BaseConfig(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Google Cloud settings

@@ -51,6 +51,7 @@ markdown_extensions:
     - pymdownx.inlinehilite
     - pymdownx.snippets
     - pymdownx.superfences
+    - footnotes
 
 plugins:
     - search
@@ -67,7 +68,7 @@ plugins:
 
 watch:
     - docs
-    - google_cloud_hsm
+    - src
 
 # Navigation
 nav:
@@ -78,4 +79,15 @@ nav:
         - Authors: authors.md
         - Contributing: contributing.md
     - Reference:
-        - google_cloud_hsm: reference/google_cloud_hsm.md
+        - Summary: reference/SUMMARY.md
+        - Google Cloud HSM:
+          - Overview: reference/google_cloud_hsm/index.md
+          - Config: reference/google_cloud_hsm/config.md
+          - Exceptions: reference/google_cloud_hsm/exceptions.md
+          - Utils: reference/google_cloud_hsm/utils.md
+          - Accounts:
+              - Overview: reference/google_cloud_hsm/accounts/index.md
+              - GCP KMS Account: reference/google_cloud_hsm/accounts/gcp_kms_account.md
+          - Types:
+              - Overview: reference/google_cloud_hsm/types/index.md
+              - Ethereum Types: reference/google_cloud_hsm/types/ethereum_types.md
