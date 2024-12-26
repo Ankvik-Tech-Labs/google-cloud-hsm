@@ -1,16 +1,16 @@
 # google-cloud-hsm
 
 
-<div align="center">
+<div align="center" markdown>
 
-| Feature       | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ------------- |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Technology    | [![Python](https://img.shields.io/badge/Python-3776AB.svg?style=flat&logo=Python&logoColor=white)](https://www.python.org/) [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch) [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=flat&logo=GitHub-Actions&logoColor=white)](https://github.com/features/actions) [![Pytest](https://img.shields.io/badge/Pytest-0A9EDC.svg?style=flat&logo=Pytest&logoColor=white)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/actions/workflows/tests.yml/badge.svg)                                                                                                                                                                                                                                                                                                                                                                                   |
-| Type Checking | [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Feature       | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Technology    | [![Python](https://img.shields.io/badge/Python-3776AB.svg?style=flat&logo=Python&logoColor=white)](https://www.python.org/) [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch) [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=flat&logo=GitHub-Actions&logoColor=white)](https://github.com/features/actions) [![Pytest](https://img.shields.io/badge/Pytest-0A9EDC.svg?style=flat&logo=Pytest&logoColor=white)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/actions/workflows/tests.yml/badge.svg)                                                                                                                                                                                                                                                   |
+| Type Checking | [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | CI/CD         | [![Release](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/release.yml/badge.svg)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/build.yml) [![Tests](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/tests.yml/badge.svg)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/tests.yml) [![Labeler](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/labeler.yml/badge.svg)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/labeler.yml) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![codecov](https://codecov.io/gh/Ankvik-Tech-Labs//graph/badge.svg?token=ISTIW37DO6)](https://codecov.io/gh/Ankvik-Tech-Labs/) |
-| Docs          | [![Docs](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/documentation.yml/badge.svg)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/build.yml)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Package       | [![PyPI - Version](https://img.shields.io/pypi/v/google-cloud-hsm.svg)](https://pypi.org/project/google-cloud-hsm/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/google-cloud-hsm)](https://pypi.org/project/google-cloud-hsm/) [![PyPI - License](https://img.shields.io/pypi/l/google-cloud-hsm)](https://pypi.org/project/google-cloud-hsm/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Meta          | [![GitHub license](https://img.shields.io/github/license/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/blob/main/LICENSE) [![GitHub last commit](https://img.shields.io/github/last-commit/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/commits/main) [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/graphs/commit-activity) [![GitHub top language](https://img.shields.io/github/languages/top/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm)                                                                                                                                       |
+| Docs          | [![Docs](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/documentation.yml/badge.svg)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsm/actions/workflows/build.yml)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Package       | [![PyPI - Version](https://img.shields.io/pypi/v/google-cloud-hsm.svg)](https://pypi.org/project/google-cloud-hsm/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/google-cloud-hsm)](https://pypi.org/project/google-cloud-hsm/) [![PyPI - License](https://img.shields.io/pypi/l/google-cloud-hsm)](https://pypi.org/project/google-cloud-hsm/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Meta          | [![GitHub license](https://img.shields.io/github/license/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/blob/main/LICENSE) [![GitHub last commit](https://img.shields.io/github/last-commit/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/commits/main) [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm/graphs/commit-activity) [![GitHub top language](https://img.shields.io/github/languages/top/Ankvik-Tech-Labs/google-cloud-hsm?style=flat&color=1573D5)](https://github.com/Ankvik-Tech-Labs/google-cloud-hsmgoogle-cloud-hsm)       |
 
 </div>
 
@@ -18,14 +18,13 @@
 
 # Description
 
-A Python library for using Cloud HSM services to sign Ethereum transactions.
+A Python library for using `Google Cloud HSM` services to sign Ethereum transactions.
 
 # Features
 
-- Cloud HSM integration for secure key management
-- Support for google-cloud-hsm (extensible to other providers)
-- Compatible with Web3.py and Ape
-- Type-safe configuration using Pydantic
+- Cloud HSM integration for secure key management.
+- Support for google-cloud-hsm (extensible to other providers).
+- Type-safe configuration using Pydantic.
 
 
 # Installation
@@ -37,10 +36,114 @@ pip install google-cloud-hsm
 
 # Usage
 
-TODO
+## Environment Setup
+
+### Google Cloud HSM Key
+
+Make sure you have created a key of type `ec-sign-secp256k1-sha256`
+in the Google cloud console. Which will look something like the following
+
+![gcp_hsm_key](media/gcp_hsm_key.png)
+
+### Required Environment Variables
+
+Before using this library, you need to set up the following environment variables:
+
+```plaintext
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_REGION=us-east1
+KEY_RING=eth-keyring
+KEY_NAME=eth-key
+GOOGLE_APPLICATION_CREDENTIALS=path/to/your/service-account.json
+```
+
+### Bash
+```bash
+# Add to ~/.bashrc or ~/.bash_profile
+export GOOGLE_CLOUD_PROJECT="your-project-id"
+export GOOGLE_CLOUD_REGION="us-east1"
+export KEY_RING="eth-keyring"
+export KEY_NAME="eth-key"
+export GOOGLE_APPLICATION_CREDENTIALS="path/to/your/service-account.json"
+
+# Apply changes
+source ~/.bashrc  # or source ~/.bash_profile
+```
+
+### Zsh
+```zsh
+# Add to ~/.zshrc
+export GOOGLE_CLOUD_PROJECT="your-project-id"
+export GOOGLE_CLOUD_REGION="us-east1"
+export KEY_RING="eth-keyring"
+export KEY_NAME="eth-key"
+export GOOGLE_APPLICATION_CREDENTIALS="path/to/your/service-account.json"
+
+# Apply changes
+source ~/.zshrc
+```
+
+### Fish
+```bash
+# Add to ~/.config/fish/config.fish
+set -x GOOGLE_CLOUD_PROJECT "your-project-id"
+set -x GOOGLE_CLOUD_REGION "us-east1"
+set -x KEY_RING "eth-keyring"
+set -x KEY_NAME "eth-key"
+set -x GOOGLE_APPLICATION_CREDENTIALS "path/to/your/service-account.json"
+set -x INFURA_KEY "your-infura-key"
+set -x WEB3_PROVIDER_URI "https://mainnet.infura.io/v3/$INFURA_KEY"
+
+# Apply changes
+source ~/.config/fish/config.fish
+```
+
+### Using .env File
+You can also create a `.env` file in your project root:
+
+```plaintext
+# .env
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_REGION=us-east1
+KEY_RING=eth-keyring
+KEY_NAME=eth-key
+GOOGLE_APPLICATION_CREDENTIALS=path/to/your/service-account.json
+```
+
+Then load it in your Python code:
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+### Environment Variable Descriptions
+
+- `GOOGLE_CLOUD_PROJECT`: Your Google Cloud project ID
+- `GOOGLE_CLOUD_REGION`: The region where your KMS resources are located (e.g., us-east1, europe-west1)
+- `KEY_RING`: The name of your KMS key ring
+- `KEY_NAME`: The name of your KMS key
+- `GOOGLE_APPLICATION_CREDENTIALS`: Path to your Google Cloud service account JSON key file
+
+### Verifying Setup
+
+You can verify your environment setup with:
+
+```python
+from google_cloud_hsm.config import BaseConfig
+
+try:
+    config = BaseConfig()
+    print("Environment configured successfully!")
+    print(f"Project ID: {config.project_id}")
+    print(f"Region: {config.location_id}")
+except ValueError as e:
+    print(f"Configuration error: {e}")
+```
 
 
 ---
+
+For more information see the following links.
 
 **Documentation**: <a href="https://Aviksaikat.github.io/google-cloud-hsm/" target="_blank">https://Aviksaikat.github.io/google-cloud-hsm/</a>
 

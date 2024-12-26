@@ -4,7 +4,7 @@ from eth_utils import to_checksum_address
 from web3 import Web3
 
 from google_cloud_hsm.types.ethereum_types import Signature, Transaction
-from google_cloud_hsm.exceptions import SignatureError
+# from google_cloud_hsm.exceptions import SignatureError
 
 
 class TestSignature:

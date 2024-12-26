@@ -1,9 +1,9 @@
 # Project information
 site_name: Google Cloud HSM
-site_description: Cloud HSM to sign Web3.py Ethereum transactions
-site_author: Saikat K
+site_description: Cloud HSM to sign Web3 Ethereum transactions using python
+site_author: Saikat Karmakar
 site_url: https://github.com/Ankvik-Tech-Labs/google-cloud-hsm
-copyright: 'Copyright &copy; Saikat K 2024-present'
+copyright: 'Copyright &copy; Saikat Karmakar 2024-present'
 
 # Repository
 repo_url: https://github.com/Ankvik-Tech-Labs/google-cloud-hsm
@@ -52,9 +52,13 @@ markdown_extensions:
     - pymdownx.snippets
     - pymdownx.superfences
     - footnotes
+    - attr_list
+    - md_in_html
+    - pymdownx.blocks.caption
 
 plugins:
     - search
+    - glightbox
     - mkdocstrings:
         handlers:
             python:
@@ -78,6 +82,10 @@ nav:
         - License: license.md
         - Authors: authors.md
         - Contributing: contributing.md
+    - Usage:
+        - As Module: Usage/as_a_module.md
+        - As CLI: Usage/as_a_cli_tool.md
+        - Example: Usage/example.md
     - Reference:
         - Summary: reference/SUMMARY.md
         - Google Cloud HSM:

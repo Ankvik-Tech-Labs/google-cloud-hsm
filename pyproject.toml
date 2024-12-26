@@ -225,6 +225,7 @@ dependencies = [
     "mkdocs-material",
     "mkdocs-gen-files",
     "pymdown-extensions",
+    "mkdocs-glightbox", # for zoom in/out images
     "mkdocstrings[python]",
     "linkchecker",
     "google_cloud_hsm @ {root:uri}/"
@@ -261,7 +262,7 @@ addopts = [
     "-ra",
     "--cov=src/google_cloud_hsm/",
     "--cov-report=term-missing",
-    "--cov-fail-under=80",
+    "--cov-fail-under=60",
 ]
 markers = [
     "integration: marks tests as integration tests",

@@ -5,6 +5,18 @@ from web3 import Web3
 
 from google_cloud_hsm.accounts.gcp_kms_account import GCPKmsAccount
 
+@pytest.fixture(scope="session", autouse=True)
+def set_env():
+    env_vars = {
+        "GOOGLE_CLOUD_PROJECT": "test-project",
+        "GOOGLE_CLOUD_REGION": "test-region",
+        "KEY_RING": "test-keyring",
+        "KEY_NAME": "test-key",
+    }
+    os.environ["GOOGLE_CLOUD_PROJECT"] = env_vars["GOOGLE_CLOUD_PROJECT"]
+    os.environ["GOOGLE_CLOUD_REGION"] = env_vars["GOOGLE_CLOUD_REGION"]
+    os.environ["KEY_RING"] = env_vars["KEY_RING"]
+    os.environ["KEY_NAME"] = env_vars["KEY_NAME"]
 
 @pytest.fixture(scope="module")
 def web3():
