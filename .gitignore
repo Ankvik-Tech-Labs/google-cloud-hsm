@@ -118,3 +118,4 @@ _version.py
 .env
 .idea/
 *.pem
+*.tape

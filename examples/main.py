@@ -46,7 +46,7 @@ if __name__ == "__main__":
     fund_tx = {
         "from": funded_account.address,
         "to": account.address,
-        "value": w3.to_wei(0.1, "ether"),
+        "value": w3.to_wei(10, "ether"),
         "gas": 21000,
         "gasPrice": w3.eth.gas_price,
         "nonce": w3.eth.get_transaction_count(funded_account.address),
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     signed_fund_tx = w3.eth.account.sign_transaction(fund_tx, funded_account.key)
     fund_tx_hash = w3.eth.send_raw_transaction(signed_fund_tx.raw_transaction)
     fund_receipt = w3.eth.wait_for_transaction_receipt(fund_tx_hash)
-    console.print(f"Funded account with 0.1 ETH. TX hash: {fund_receipt['transactionHash'].hex()}")
+    console.print(f"Funded account with 10 ETH. TX hash: {fund_receipt['transactionHash'].hex()}")
 
     # Now create and sign a transaction from our GCP KMS account
     tx = {
