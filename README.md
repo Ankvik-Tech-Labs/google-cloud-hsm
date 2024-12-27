@@ -1,4 +1,4 @@
-# web3-google-hsm
+# 🔐 web3-google-hsm
 
 
 <div align="center" markdown>
@@ -16,18 +16,18 @@
 
 ---
 
-# Description
+# 🎯 Description
 
 A Python library for using `Google Cloud HSM` services to sign Ethereum transactions.
 
-# Features
+# ✨ Features
 
-- Cloud HSM integration for secure key management.
-- Support for web3-google-hsm (extensible to other providers).
-- Type-safe configuration using Pydantic.
+- 🔒 Cloud HSM integration for secure key management
+- 🌐 Support for web3-google-hsm (extensible to other providers)
+- 🛡️ Type-safe configuration using Pydantic
 
 
-# Installation
+# 📦 Installation
 
 - Install using `pip`
 ```py
@@ -37,16 +37,16 @@ pip install web3-google-hsm
 ![demo](media/demo.gif)
 
 
-# Environment Setup
+# 🛠️ Environment Setup
 
-### Google Cloud HSM Key
+### 🔑 Google Cloud HSM Key
 
 Make sure you have created a key of type `ec-sign-secp256k1-sha256`
 in the Google cloud console. Which will look something like the following
 
 ![gcp_hsm_key](media/gcp_hsm_key.png)
 
-### Required Environment Variables
+### 🌟 Required Environment Variables
 
 Before using this library, you need to set up the following environment variables:
 
@@ -58,7 +58,7 @@ KEY_NAME=eth-key
 GOOGLE_APPLICATION_CREDENTIALS=path/to/your/service-account.json
 ```
 
-### Bash
+### 💻 Bash
 ```bash
 # Add to ~/.bashrc or ~/.bash_profile
 export GOOGLE_CLOUD_PROJECT="your-project-id"
@@ -71,7 +71,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="path/to/your/service-account.json"
 source ~/.bashrc  # or source ~/.bash_profile
 ```
 
-### Zsh
+### 🐚 Zsh
 ```zsh
 # Add to ~/.zshrc
 export GOOGLE_CLOUD_PROJECT="your-project-id"
@@ -84,7 +84,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="path/to/your/service-account.json"
 source ~/.zshrc
 ```
 
-### Fish
+### 🐟 Fish
 ```bash
 # Add to ~/.config/fish/config.fish
 set -x GOOGLE_CLOUD_PROJECT "your-project-id"
@@ -99,7 +99,7 @@ set -x WEB3_PROVIDER_URI "https://mainnet.infura.io/v3/$INFURA_KEY"
 source ~/.config/fish/config.fish
 ```
 
-### Using .env File
+### 📄 Using .env File
 You can also create a `.env` file in your project root:
 
 ```plaintext
@@ -117,15 +117,15 @@ from dotenv import load_dotenv
 load_dotenv()
 ```
 
-### Environment Variable Descriptions
+### 📝 Environment Variable Descriptions
 
-- `GOOGLE_CLOUD_PROJECT`: Your Google Cloud project ID
-- `GOOGLE_CLOUD_REGION`: The region where your KMS resources are located (e.g., us-east1, europe-west1)
-- `KEY_RING`: The name of your KMS key ring
-- `KEY_NAME`: The name of your KMS key
-- `GOOGLE_APPLICATION_CREDENTIALS`: Path to your Google Cloud service account JSON key file
+- 🌐 `GOOGLE_CLOUD_PROJECT`: Your Google Cloud project ID
+- 📍 `GOOGLE_CLOUD_REGION`: The region where your KMS resources are located (e.g., us-east1, europe-west1)
+- 🔑 `KEY_RING`: The name of your KMS key ring
+- 🗝️ `KEY_NAME`: The name of your KMS key
+- 📜 `GOOGLE_APPLICATION_CREDENTIALS`: Path to your Google Cloud service account JSON key file
 
-### Verifying Setup
+### ✅ Verifying Setup
 
 You can verify your environment setup with:
 
@@ -141,18 +141,18 @@ except ValueError as e:
     print(f"Configuration error: {e}")
 ```
 
-# Usage Guide
+# 📚 Usage Guide
 
 This guide demonstrates how to use the `Google Cloud KMS` Ethereum signer library for message and transaction signing.
 
-## Prerequisites
+## 📋 Prerequisites
 
 Before you begin, ensure you have:
-1. Set up your environment variables (see [README.md](../index.md))
-2. Python `3.10` or higher installed
-3. Access to a `Web3` provider (local or remote) (Optional)
+1. 🔧 Set up your environment variables (see [README.md](../index.md))
+2. 🐍 Python `3.10` or higher installed
+3. 🌐 Access to a `Web3` provider (local or remote) (Optional)
 
-## Basic Setup
+## 🚀 Basic Setup
 
 ```python
 from web3_google_hsm.accounts.gcp_kms_account import GCPKmsAccount
@@ -163,9 +163,9 @@ account = GCPKmsAccount()
 print(f"GCP KMS Account address: {account.address}")
 ```
 
-## Message Signing
+## 📝 Message Signing
 
-### Simple Message Signing
+### ✍️ Simple Message Signing
 ```python
 # Sign a message
 message = "Hello Ethereum!"
@@ -178,7 +178,7 @@ print(f"V: {signed_message.v}")
 print(f"Full signature: {signed_message.to_hex()}")
 ```
 
-### Message Signature Verification
+### ✔️ Message Signature Verification
 ```python
 from eth_account.messages import encode_defunct
 from web3 import Web3
@@ -199,9 +199,9 @@ is_valid = recovered_address.lower() == account.address.lower()
 print(f"Signature valid: {is_valid}")
 ```
 
-## Transaction Signing
+## 💳 Transaction Signing
 
-### Creating a Transaction
+### 📤 Creating a Transaction
 ```python
 tx = {
     "from": account.address,
@@ -219,7 +219,7 @@ tx = {
 signed_tx = account.sign_transaction(Transaction.from_dict(tx))
 ```
 
-### Sending a Transaction
+### 📡 Sending a Transaction
 ```python
 if signed_tx:
     # Send the transaction
@@ -234,7 +234,7 @@ if signed_tx:
     print(f"Gas used: {receipt['gasUsed']}")
 ```
 
-### Transaction Signature Verification
+### 🔍 Transaction Signature Verification
 ```python
 # Verify the transaction signature
 recovered_address = w3.eth.account.recover_transaction(signed_tx)
@@ -242,7 +242,7 @@ is_valid = recovered_address.lower() == account.address.lower()
 print(f"Signature valid: {is_valid}")
 ```
 
-## Working with Local Test Networks
+## 🏗️ Working with Local Test Networks
 
 ### Funding Your Account (for testing with Anvil/Hardhat)
 ```python
@@ -268,24 +268,24 @@ fund_tx_hash = w3.eth.send_raw_transaction(signed_fund_tx.raw_transaction)
 fund_receipt = w3.eth.wait_for_transaction_receipt(fund_tx_hash)
 ```
 
-## Using with Different Networks
+## 🌐 Using with Different Networks
 
-### Local Network (Anvil/Hardhat)
+### 🏠 Local Network (Anvil/Hardhat)
 ```python
 w3 = Web3(Web3.HTTPProvider("http://localhost:8545"))
 ```
 
-### Mainnet (via Infura)
+### 🌍 Mainnet (via Infura)
 ```python
 w3 = Web3(Web3.HTTPProvider(f"https://mainnet.infura.io/v3/{INFURA_KEY}"))
 ```
 
-### Testnet (sepolia)
+### 🧪 Testnet (sepolia)
 ```python
 w3 = Web3(Web3.HTTPProvider(f"https://sepolia.infura.io/v3/{INFURA_KEY}"))
 ```
 
-## Error Handling
+## ⚠️ Error Handling
 
 ```python
 from web3_google_hsm.types.ethereum_types import Transaction
@@ -308,9 +308,9 @@ except Exception as e:
 
 For more information see the following links.
 
-**Documentation**: <a href="https://ankvik-tech-labs.github.io/web3-google-hsm" target="_blank">https://ankvik-tech-labs.github.io/web3-google-hsm/</a>
+**📚 Documentation**: <a href="https://ankvik-tech-labs.github.io/web3-google-hsm" target="_blank">https://ankvik-tech-labs.github.io/web3-google-hsm/</a>
 
-**Source Code**: <a href="https://github.com/Ankvik-Tech-Labs/web3-google-hsm" target="_blank">https://github.com/Ankvik-Tech-Labs/web3-google-hsm</a>
+**💻 Source Code**: <a href="https://github.com/Ankvik-Tech-Labs/web3-google-hsm" target="_blank">https://github.com/Ankvik-Tech-Labs/web3-google-hsm</a>
 
 ---
 
@@ -319,13 +319,13 @@ For more information see the following links.
 <br>
 
 
-## Development
+## 👨‍💻 Development
 
-### Setup environment
+### 🔧 Setup environment
 
 We use [Hatch](https://hatch.pypa.io/latest/install/) to manage the development environment and production build. Ensure it's installed on your system.
 
-### Run unit tests
+### 🧪 Run unit tests
 
 You can run all the tests with:
 
@@ -333,7 +333,7 @@ You can run all the tests with:
 hatch run test
 ```
 
-### Format the code
+### ✨ Format the code
 
 Execute the following command to apply linting and check typing:
 
@@ -341,7 +341,7 @@ Execute the following command to apply linting and check typing:
 hatch run lint
 ```
 
-### Publish a new version
+### 📦 Publish a new version
 
 You can bump the version, create a commit and associated tag with one command:
 
@@ -361,7 +361,7 @@ Your default Git text editor will open so you can add information about the rele
 
 When you push the tag on GitHub, the workflow will automatically publish it on PyPi and a GitHub release will be created as draft.
 
-## Serve the documentation
+## 📚 Serve the documentation
 
 You can serve the Mkdocs documentation with:
 
@@ -375,6 +375,6 @@ It'll automatically watch for changes in your code.
 </details>
 
 
-## License
+## 📜 License
 
 This project is licensed under the terms of the BSD license.
