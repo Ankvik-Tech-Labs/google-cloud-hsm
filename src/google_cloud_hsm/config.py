@@ -2,7 +2,7 @@
 
 import os
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 # Configuration Constants
 ENV_PROJECT_ID = "GOOGLE_CLOUD_PROJECT"
@@ -17,16 +17,16 @@ class BaseConfig(BaseModel):
     """Application settings for Google Cloud KMS."""
 
     # Google Cloud settings
-    project_id: str
-    location_id: str
-    key_ring_id: str
-    key_id: str
+    project_id: str = Field(..., min_length=1)
+    location_id: str = Field(..., min_length=1)
+    key_ring_id: str = Field(..., min_length=1)
+    key_id: str = Field(..., min_length=1)
 
     # Web3 settings
-    web3_provider_uri: str = DEFAULT_WEB3_PROVIDER_URI
+    web3_provider_uri: str = Field(default=DEFAULT_WEB3_PROVIDER_URI, min_length=1)
 
-    @classmethod
     @field_validator("project_id", "location_id", "key_ring_id", "key_id", "web3_provider_uri")
+    @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Validate that fields are not empty or whitespace."""
         if not v or not v.strip():
@@ -45,11 +45,8 @@ class BaseConfig(BaseModel):
         Returns:
             BaseConfig: Configuration instance with values from environment variables.
 
-        Example:
-            ```python
-            config = BaseConfig.from_env()
-            account = GCPKmsAccount(config=config)
-            ```
+        Raises:
+            ValidationError: If any required fields are missing or invalid
         """
         return cls(
             project_id=os.getenv(ENV_PROJECT_ID, ""),

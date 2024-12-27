@@ -84,7 +84,7 @@ def test_transaction_signing(gcp_account, fund_account, web3):
     assert recovered.lower() == gcp_account.address.lower()
 
 
-def test_transaction_with_data(gcp_account, web3):
+def test_transaction_with_data(gcp_account, fund_account, web3):
     """Test signing transactions with data field."""
     tx = Transaction(
         chain_id=web3.eth.chain_id,

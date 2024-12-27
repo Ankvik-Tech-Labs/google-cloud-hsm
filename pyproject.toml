@@ -1,7 +1,7 @@
 [project]
 name = "google-cloud-hsm"
 authors = [
-  { name = "google-cloud-hsm", email = "king.arthur@camelot.bt" }
+  { name = "google-cloud-hsm", email = "github.maturity983@passinbox.com" }
 ]
 description = "Cloud HSM to sign Web3.py Ethereum transactions"
 readme = "README.md"
@@ -262,11 +262,11 @@ addopts = [
     "-ra",
     "--cov=src/google_cloud_hsm/",
     "--cov-report=term-missing",
-    "--cov-fail-under=60",
+    "--cov-fail-under=60", # without integration tests the coverage falls below 80%
 ]
 markers = [
     "integration: marks tests as integration tests",
-    "performance: marks tests as performance tests",
+    "unit: marks tests as unit tests",
 ]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -282,6 +282,8 @@ test-cov-xml = "pytest --cov-report=xml"
 
 # Replace tox & nox
 [[tool.hatch.envs.test.matrix]]
+# python = ["3.10", "3.11", "3.12", "3.13"] # Technicall it can replace gh matrix tests
+# but they runs paralelly so more efficient so keep it to a single version for now
 python = ["3.10"]
 
 #########
