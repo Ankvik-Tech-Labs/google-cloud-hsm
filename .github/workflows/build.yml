@@ -28,6 +28,7 @@ jobs:
     - name: Run Tests
       run: |
         hatch run test:pytest
+        hatch run test:test-cov-xml
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
       with:
