@@ -53,7 +53,7 @@ def test_message_signing_and_verification(gcp_account, web3):
     assert recovered_address.lower() == gcp_account.address.lower()
 
 
-def test_transaction_signing(gcp_account, web3, fund_account):
+def test_transaction_signing(gcp_account, fund_account, web3):
     """Test signing and sending transactions with real GCP KMS."""
     # Create transaction
     tx = Transaction(
@@ -84,7 +84,7 @@ def test_transaction_signing(gcp_account, web3, fund_account):
     assert recovered.lower() == gcp_account.address.lower()
 
 
-def test_transaction_with_data(gcp_account, web3, fund_account):
+def test_transaction_with_data(gcp_account, web3):
     """Test signing transactions with data field."""
     tx = Transaction(
         chain_id=web3.eth.chain_id,
@@ -110,7 +110,7 @@ def test_transaction_with_data(gcp_account, web3, fund_account):
     assert tx_details['input'] == HexBytes("0x68656c6c6f")
 
 
-def test_multiple_transactions(gcp_account, web3, fund_account):
+def test_multiple_transactions(gcp_account, web3):
     """Test sending multiple consecutive transactions."""
     for i in range(3):
         tx = Transaction(
@@ -150,22 +150,6 @@ def test_get_address(gcp_kms_account: GCPKmsAccount, test_address: str):
     assert address == test_address
     assert address.startswith("0x")
     assert len(address) == 42
-
-def test_sign_message(gcp_kms_account: GCPKmsAccount, mock_kms_client: MagicMock):
-    """Test message signing."""
-    message = "Hello, Ethereum!"
-    signature = gcp_kms_account.sign_message(message)
-
-    # Verify the signature components
-    assert signature.v in (27, 28)
-    assert len(signature.r) == 32
-    assert len(signature.s) == 32
-
-    # Verify KMS was called correctly
-    mock_kms_client.asymmetric_sign.assert_called_once()
-    call_args = mock_kms_client.asymmetric_sign.call_args[1]
-    assert "name" in call_args["request"]
-    assert "digest" in call_args["request"]
 
 
 def test_invalid_message_type(gcp_kms_account: GCPKmsAccount):

@@ -31,10 +31,10 @@ class GCPKmsAccount(BaseModel):
     _cached_public_key: bytes | None = PrivateAttr(default=None)
     _settings: BaseConfig = PrivateAttr()
 
-    def __init__(self, **data: Any):
+    def __init__(self, config: BaseConfig | None = None, **data: Any):
         super().__init__(**data)
         self._client = kms.KeyManagementServiceClient()
-        self._settings = BaseConfig()
+        self._settings = config or BaseConfig.from_env()
         self.key_path = self._get_key_version_path()
 
     def _get_key_version_path(self) -> str:
@@ -83,6 +83,12 @@ class GCPKmsAccount(BaseModel):
         Returns:
             Signature: The v, r, s components of the signature
 
+        Raises:
+            TypeError: If message is not str or bytes
+            ValueError: If message hash length is invalid
+            SignatureError: If signature verification fails
+            Exception: If signing fails
+
         Example:
             ```{ .python .copy }
                 account = GCPKmsAccount()
@@ -115,11 +121,19 @@ class GCPKmsAccount(BaseModel):
             msg = "Failed to sign message"
             raise Exception(msg)
 
-        # Convert to RSV format with v = 27
-        sig_dict = convert_der_to_rsv(der_signature, 27)
-        signature = Signature(v=sig_dict["v"], r=sig_dict["r"], s=sig_dict["s"])
+        # Try both v values (27 and 28) to find the correct one
+        for v_value in (27, 28):
+            sig_dict = convert_der_to_rsv(der_signature, v_value)
+            signature = Signature(v=sig_dict["v"], r=sig_dict["r"], s=sig_dict["s"])
 
-        return signature
+            # Verify the signature
+            recovered = Account.recover_message(hash_message, vrs=(signature.v, signature.r, signature.s))
+
+            if recovered.lower() == self.address.lower():
+                return signature
+
+        msg = "Failed to create valid signature"
+        raise SignatureError(msg)
 
     def sign_transaction(self, transaction: Transaction) -> bytes | None:
         """

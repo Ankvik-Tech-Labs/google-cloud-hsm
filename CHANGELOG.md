@@ -2,13 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.1] - 2024-12-25
+## [0.0.1] - 2024-12-27
 
 ### 🐛 Bug Fixes
 
 - Lint fixed and mypy errors fixed
 - Fixing pre-commit errors again again again :(
 - Fixing skip integration tests if no env vars are set
+- Fixing skip integration tests if no env vars are set and changelog updated
 
 ### 📚 Documentation
 
@@ -17,6 +18,7 @@ All notable changes to this project will be documented in this file.
 ### 🧪 Testing
 
 - Writing tests. added tests for utils and Ethereum types
+- Test updated again
 
 ### ⚙️ Miscellaneous Tasks
 
