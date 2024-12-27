@@ -3,7 +3,7 @@ import os
 import pytest
 from web3 import Web3
 
-from google_cloud_hsm.accounts.gcp_kms_account import GCPKmsAccount
+from web3_google_hsm.accounts.gcp_kms_account import GCPKmsAccount
 
 # @pytest.fixture(scope="session", autouse=True)
 # def set_env():

@@ -1,7 +1,7 @@
 """Tests for utility functions."""
 import pytest
 import ecdsa
-from google_cloud_hsm.utils import extract_public_key_bytes, convert_der_to_rsv
+from web3_google_hsm.utils import extract_public_key_bytes, convert_der_to_rsv
 
 # Real test values
 TEST_PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----

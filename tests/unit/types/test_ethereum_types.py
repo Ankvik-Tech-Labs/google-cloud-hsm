@@ -3,8 +3,8 @@ from eth_account.messages import encode_defunct
 from eth_utils import to_checksum_address
 from web3 import Web3
 
-from google_cloud_hsm.types.ethereum_types import Signature, Transaction
-# from google_cloud_hsm.exceptions import SignatureError
+from web3_google_hsm.types.ethereum_types import Signature, Transaction
+# from web3_google_hsm.exceptions import SignatureError
 
 
 class TestSignature:

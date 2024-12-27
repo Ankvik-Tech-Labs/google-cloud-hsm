@@ -8,7 +8,7 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import is_address, to_checksum_address, to_int
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from google_cloud_hsm.exceptions import SignatureError
+from web3_google_hsm.exceptions import SignatureError
 
 SIGNATURE_LENGTH: int = 65
 MSG_HASH_LENGTH: int = 32

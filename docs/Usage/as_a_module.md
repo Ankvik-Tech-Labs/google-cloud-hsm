@@ -12,7 +12,7 @@ Before you begin, ensure you have:
 ## Basic Setup
 
 ```python
-from google_cloud_hsm.accounts.gcp_kms_account import GCPKmsAccount
+from web3_google_hsm.accounts.gcp_kms_account import GCPKmsAccount
 
 account = GCPKmsAccount()
 
@@ -145,7 +145,7 @@ w3 = Web3(Web3.HTTPProvider(f"https://sepolia.infura.io/v3/{INFURA_KEY}"))
 ## Error Handling
 
 ```python
-from google_cloud_hsm.types.ethereum_types import Transaction
+from web3_google_hsm.types.ethereum_types import Transaction
 
 try:
     signed_message = account.sign_message("Hello")

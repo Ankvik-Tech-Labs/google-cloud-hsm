@@ -3,8 +3,8 @@ import os
 import pytest
 from unittest.mock import MagicMock
 
-from google_cloud_hsm.accounts.gcp_kms_account import GCPKmsAccount
-from google_cloud_hsm import Transaction
+from web3_google_hsm.accounts.gcp_kms_account import GCPKmsAccount
+from web3_google_hsm import Transaction
 from eth_account.messages import encode_defunct
 from hexbytes import HexBytes
 

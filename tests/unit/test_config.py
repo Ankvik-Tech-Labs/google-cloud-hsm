@@ -1,6 +1,6 @@
 """Unit tests for configuration."""
 import pytest
-from google_cloud_hsm.config import (
+from web3_google_hsm.config import (
     BaseConfig,
     ENV_PROJECT_ID,
     ENV_LOCATION_ID,

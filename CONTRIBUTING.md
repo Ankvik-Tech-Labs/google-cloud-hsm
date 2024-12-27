@@ -75,8 +75,8 @@ This often provides additional considerations and avoids unnecessary work.
 3. Clone this copy to your local disk:
 
    ```console
-   git clone git@github.com:YourLogin/google-cloud-hsm.git
-   cd google-cloud-hsm
+   git clone git@github.com:YourLogin/web3-google-hsm.git
+   cd web3-google-hsm
    ```
 
 4. Make sure [hatch] is installed using [pipx]:

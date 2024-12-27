@@ -1,7 +1,7 @@
 [project]
-name = "google-cloud-hsm"
+name = "web3-google-hsm"
 authors = [
-  { name = "google-cloud-hsm", email = "github.maturity983@passinbox.com" }
+  { name = "web3-google-hsm", email = "github.maturity983@passinbox.com" }
 ]
 description = "Cloud HSM to sign Web3.py Ethereum transactions"
 readme = "README.md"
@@ -18,8 +18,8 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://Aviksaikat.github.io/google-cloud-hsm/"
-Source = "https://github.com/Ankvik-Tech-Labs/google-cloud-hsm"
+Documentation = "https://Aviksaikat.github.io/web3-google-hsm/"
+Source = "https://github.com/Ankvik-Tech-Labs/web3-google-hsm"
 
 [tool.hatch]
 
@@ -34,11 +34,11 @@ allow-direct-references = true
 [tool.hatch.version]
 source = "regex_commit"
 commit_extra_args = ["-e"]
-path = "src/google_cloud_hsm/__version__.py"
+path = "src/web3_google_hsm/__version__.py"
 
 
 # [tool.hatch.build.hooks.vcs]
-# version-file = "src/google_cloud_hsm/_version.py"
+# version-file = "src/web3_google_hsm/_version.py"
 
 
 ##################
@@ -46,7 +46,7 @@ path = "src/google_cloud_hsm/__version__.py"
 ##################
 
 [tool.mypy]
-files = ["google_cloud_hsm"]
+files = ["web3_google_hsm"]
 exclude = ["build/", "dist/", "docs/", "tests/*"]
 disallow_untyped_defs = true
 disallow_any_unimported = true
@@ -68,7 +68,7 @@ include = [
   "tests/**/*.py",
   "tests/**/*.pyi"
 ]
-exclude = ["tests", "src/google_cloud_hsm/_version.py"]
+exclude = ["tests", "src/web3_google_hsm/_version.py"]
 
 [tool.ruff.lint]
 preview = true # preview features & checks, use with caution
@@ -121,7 +121,7 @@ ignore = [
 
 
 [tool.ruff.lint.isort]
-known-first-party = ["google_cloud_hsm"]
+known-first-party = ["web3_google_hsm"]
 
 
 [tool.ruff.lint.flake8-tidy-imports]
@@ -136,7 +136,7 @@ ban-relative-imports = "all"
 
 [tool.coverage.run]
 branch = true
-source = ["src/google_cloud_hsm"]
+source = ["src/web3_google_hsm"]
 omit = [
   # automatically created by hatch-vcs, not in repo
   "_version.py",
@@ -209,13 +209,13 @@ lint = [
     "echo \"VERSION: `ruff --version`\"",
     "ruff format .",
     "ruff check . --fix",
-    "mypy src/google_cloud_hsm/",
+    "mypy src/web3_google_hsm/",
 ]
 lint-check = [
     "echo \"VERSION: `ruff --version`\"",
     "ruff format --check .",
     "ruff check .",
-    "mypy src/google_cloud_hsm/",
+    "mypy src/web3_google_hsm/",
 ]
 
 # Docs env dendencies
@@ -228,7 +228,7 @@ dependencies = [
     "mkdocs-glightbox", # for zoom in/out images
     "mkdocstrings[python]",
     "linkchecker",
-    "google_cloud_hsm @ {root:uri}/"
+    "web3_google_hsm @ {root:uri}/"
 ]
 
 
@@ -260,7 +260,7 @@ addopts = [
     "--verbose",
     "--strict-markers",
     "-ra",
-    "--cov=src/google_cloud_hsm/",
+    "--cov=src/web3_google_hsm/",
     "--cov-report=term-missing",
     "--cov-fail-under=60", # without integration tests the coverage falls below 80%
 ]
@@ -300,4 +300,4 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/google_cloud_hsm/"]
+packages = ["src/web3_google_hsm/"]

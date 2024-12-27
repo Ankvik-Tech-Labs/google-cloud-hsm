@@ -35,7 +35,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true
         verbose: true
-        slug: Ankvik-Tech-Labs/google-cloud-hsm
+        slug: Ankvik-Tech-Labs/web3-google-hsm
 
   release:
     runs-on: ubuntu-latest

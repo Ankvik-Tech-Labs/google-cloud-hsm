@@ -32,5 +32,5 @@ repos:
   hooks:
     - id: mypy
       args: ["--install-types", "--non-interactive"]
-      files: ^(google_cloud_hsm/)
+      files: ^(web3_google_hsm/)
       additional_dependencies: [types-tabulate, types-cachetools, "pydantic>=1.10.4"]

@@ -11,10 +11,10 @@ from google.cloud import kms
 from pydantic import BaseModel, Field, PrivateAttr
 from rich.traceback import install
 
-from google_cloud_hsm.config import BaseConfig
-from google_cloud_hsm.exceptions import SignatureError
-from google_cloud_hsm.types.ethereum_types import MSG_HASH_LENGTH, Signature, Transaction
-from google_cloud_hsm.utils import convert_der_to_rsv, extract_public_key_bytes
+from web3_google_hsm.config import BaseConfig
+from web3_google_hsm.exceptions import SignatureError
+from web3_google_hsm.types.ethereum_types import MSG_HASH_LENGTH, Signature, Transaction
+from web3_google_hsm.utils import convert_der_to_rsv, extract_public_key_bytes
 
 # initialise the rich traceback for better tracebacks
 install()

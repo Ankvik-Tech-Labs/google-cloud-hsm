@@ -2,12 +2,12 @@
 site_name: Google Cloud HSM
 site_description: Cloud HSM to sign Web3 Ethereum transactions using python
 site_author: Saikat Karmakar
-site_url: https://github.com/Ankvik-Tech-Labs/google-cloud-hsm
+site_url: https://github.com/Ankvik-Tech-Labs/web3-google-hsm
 copyright: 'Copyright &copy; Saikat Karmakar 2024-present'
 
 # Repository
-repo_url: https://github.com/Ankvik-Tech-Labs/google-cloud-hsm
-repo_name: Ankvik-Tech-Labs/google-cloud-hsm
+repo_url: https://github.com/Ankvik-Tech-Labs/web3-google-hsm
+repo_name: Ankvik-Tech-Labs/web3-google-hsm
 
 theme:
     name: material
@@ -89,13 +89,13 @@ nav:
     - Reference:
         - Summary: reference/SUMMARY.md
         - Google Cloud HSM:
-          - Overview: reference/google_cloud_hsm/index.md
-          - Config: reference/google_cloud_hsm/config.md
-          - Exceptions: reference/google_cloud_hsm/exceptions.md
-          - Utils: reference/google_cloud_hsm/utils.md
+          - Overview: reference/web3_google_hsm/index.md
+          - Config: reference/web3_google_hsm/config.md
+          - Exceptions: reference/web3_google_hsm/exceptions.md
+          - Utils: reference/web3_google_hsm/utils.md
           - Accounts:
-              - Overview: reference/google_cloud_hsm/accounts/index.md
-              - GCP KMS Account: reference/google_cloud_hsm/accounts/gcp_kms_account.md
+              - Overview: reference/web3_google_hsm/accounts/index.md
+            #   - GCP KMS Account: reference/web3_google_hsm/accounts/gcp_kms_account.md
           - Types:
-              - Overview: reference/google_cloud_hsm/types/index.md
-              - Ethereum Types: reference/google_cloud_hsm/types/ethereum_types.md
+              - Overview: reference/web3_google_hsm/types/index.md
+            #   - Ethereum Types: reference/web3_google_hsm/types/ethereum_types.md

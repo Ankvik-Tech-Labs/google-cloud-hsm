@@ -6,8 +6,8 @@ from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from web3 import Web3
 
-from google_cloud_hsm import GCPKmsAccount
-from google_cloud_hsm.types.ethereum_types import Transaction, Signature
+from web3_google_hsm import GCPKmsAccount
+from web3_google_hsm.types.ethereum_types import Transaction, Signature
 
 # Test Constants
 TEST_ADDRESS = "0x0545640A0EcD6FB6ae94766811F30dCDA4746DFC"
