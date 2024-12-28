@@ -89,13 +89,13 @@ nav:
     - Reference:
         - Summary: reference/SUMMARY.md
         - Google Cloud HSM:
-          - Overview: reference/web3_google_hsm/index.md
+        #   - Overview: reference/web3_google_hsm/web3_google_hsm.md
           - Config: reference/web3_google_hsm/config.md
           - Exceptions: reference/web3_google_hsm/exceptions.md
           - Utils: reference/web3_google_hsm/utils.md
           - Accounts:
-              - Overview: reference/web3_google_hsm/accounts/index.md
-            #   - GCP KMS Account: reference/web3_google_hsm/accounts/gcp_kms_account.md
+            #   - Overview: reference/web3_google_hsm/accounts/index.md
+              - GCP KMS Account: reference/web3_google_hsm/accounts/gcp_kms_account.md
           - Types:
-              - Overview: reference/web3_google_hsm/types/index.md
-            #   - Ethereum Types: reference/web3_google_hsm/types/ethereum_types.md
+            #   - Overview: reference/web3_google_hsm/types/index.md
+              - Ethereum Types: reference/web3_google_hsm/types/ethereum_types.md

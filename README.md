@@ -148,7 +148,7 @@ This guide demonstrates how to use the `Google Cloud KMS` Ethereum signer librar
 ## 📋 Prerequisites
 
 Before you begin, ensure you have:
-1. 🔧 Set up your environment variables (see [README.md](../index.md))
+1. 🔧 Set up your environment variables (see [README.md](https://github.com/Ankvik-Tech-Labs/web3-google-hsm?tab=readme-ov-file#-required-environment-variables))
 2. 🐍 Python `3.10` or higher installed
 3. 🌐 Access to a `Web3` provider (local or remote) (Optional)
 
