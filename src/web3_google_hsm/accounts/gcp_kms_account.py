@@ -1,3 +1,4 @@
+import datetime
 from functools import cached_property
 from typing import Any, cast
 
@@ -8,6 +9,7 @@ from eth_account.messages import _hash_eip191_message, encode_defunct  # noqa: P
 from eth_typing import ChecksumAddress
 from eth_utils import keccak, to_checksum_address
 from google.cloud import kms
+from google.protobuf import duration_pb2  # type: ignore
 from pydantic import BaseModel, Field, PrivateAttr
 from rich.traceback import install
 
@@ -63,6 +65,58 @@ class GCPKmsAccount(BaseModel):
     def address(self) -> ChecksumAddress:
         """Get Ethereum address derived from public key."""
         return to_checksum_address(keccak(self.public_key)[-20:].hex().lower())
+
+    @classmethod
+    def create_eth_key(
+        cls,
+        project_id: str,
+        location_id: str,
+        key_ring_id: str,
+        key_id: str,
+        retention_days: int = 365,
+    ) -> kms.CryptoKey:
+        """
+        Creates a new Ethereum signing key in Cloud KMS backed by Cloud HSM.
+
+        Args:
+            project_id: Google Cloud project ID
+            location_id: Cloud KMS location (e.g. 'us-east1')
+            key_ring_id: ID of the Cloud KMS key ring
+            key_id: ID of the key to create
+            retention_days: Days to retain key versions before destruction (default: 365)
+
+        Returns:
+            CryptoKey: Created Cloud KMS key
+
+        Raises:
+            Exception: If key creation fails
+        """
+        try:
+            client = kms.KeyManagementServiceClient()
+            key_ring_name = client.key_ring_path(project_id, location_id, key_ring_id)
+
+            # Configure for Ethereum signing
+            purpose = kms.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_SIGN
+            algorithm = kms.CryptoKeyVersion.CryptoKeyVersionAlgorithm.EC_SIGN_SECP256K1_SHA256
+            protection_level = kms.ProtectionLevel.HSM
+
+            key = {
+                "purpose": purpose,
+                "version_template": {
+                    "algorithm": algorithm,
+                    "protection_level": protection_level,
+                },
+                "destroy_scheduled_duration": duration_pb2.Duration().FromTimedelta(
+                    datetime.timedelta(days=retention_days)
+                ),
+            }
+
+            return client.create_crypto_key(
+                request={"parent": key_ring_name, "crypto_key_id": key_id, "crypto_key": key}
+            )
+        except Exception as e:
+            msg = f"Failed to create key: {e}"
+            raise Exception(msg) from e
 
     def _sign_raw_hash(self, msghash: bytes) -> bytes | None:
         """Sign a message hash using KMS."""
