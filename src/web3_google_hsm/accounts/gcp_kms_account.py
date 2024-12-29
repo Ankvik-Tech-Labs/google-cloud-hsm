@@ -90,6 +90,8 @@ class GCPKmsAccount(BaseModel):
 
         Raises:
             Exception: If key creation fails
+        Reference:
+            https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/kms/snippets/create_key_hsm.py
         """
         try:
             client = kms.KeyManagementServiceClient()

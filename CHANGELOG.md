@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Fixed license badge in readme
 - Updated readme with emojies :)
 - Broken link and docs build fixed
+- Links added
 
 ### ⚙️ Miscellaneous Tasks
 
