@@ -1,4 +1,5 @@
 """Tests for the CLI interface."""
+import os
 from typing import Generator
 from unittest.mock import patch, MagicMock, PropertyMock
 
@@ -122,11 +123,26 @@ class TestGenerateCommand:
         assert result.exit_code == 0
         assert "Created Ethereum signing key" in result.stdout
 
-    def test_generate_missing_required_args(self, runner: CliRunner) -> None:
+    def test_fail_generate_missing_required_args(self, runner: CliRunner) -> None:
         """Test key generation fails when required arguments are missing."""
-        result = runner.invoke(app, ["generate"])
-        assert result.exit_code == 2
-        assert "--project-id" in result.stdout
+        # Store the original environment variables so we can restore them later
+        original_environ = dict(os.environ)
+
+        try:
+            # Clear all environment variables that could affect the test
+            os.environ.clear()
+
+            # Run the CLI command
+            result = runner.invoke(app, ["generate"])
+
+            # Verify the command failed due to missing required argument
+            assert result.exit_code == 2
+            assert "--project-id" in result.stdout
+
+        finally:
+            # Restore the original environment variables
+            os.environ.clear()
+            os.environ.update(original_environ)
 
     #? These tests are skipped because of `memoryview: a bytes-like object is required, not 'MagicMock'`
     # def test_generate_handles_error(
@@ -192,7 +208,7 @@ class TestSignCommand:
     #         assert "Message signed successfully!" in result.stdout
     #         assert "Hello Ethereum!" in result.stdout
 
-    def test_sign_with_wrong_account(
+    def test_fail_sign_with_wrong_account(
         self, runner: CliRunner, mock_account_setup: MagicMock
     ) -> None:
         """Test signing fails with wrong account address."""
@@ -218,7 +234,7 @@ class TestSignCommand:
             assert result.exit_code == 1
             assert "Account mismatch" in result.stdout
 
-    # def test_sign_handles_signing_error(
+    # def test_fail_sign_handles_signing_error(
     #     self, runner: CliRunner, mock_account_setup: MagicMock
     # ) -> None:
     #     """Test error handling during signing."""

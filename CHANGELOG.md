@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 
 - Changelog updated
 - Version updated to 0.0.2
+- Changelog updated
 
 ## [0.0.1] - 2024-12-27
 
