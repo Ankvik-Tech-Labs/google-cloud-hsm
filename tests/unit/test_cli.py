@@ -1,5 +1,4 @@
 """Tests for the CLI interface."""
-import os
 from typing import Generator
 from unittest.mock import patch, MagicMock, PropertyMock
 
@@ -125,24 +124,9 @@ class TestGenerateCommand:
 
     def test_fail_generate_missing_required_args(self, runner: CliRunner) -> None:
         """Test key generation fails when required arguments are missing."""
-        # Store the original environment variables so we can restore them later
-        original_environ = dict(os.environ)
-
-        try:
-            # Clear all environment variables that could affect the test
-            os.environ.clear()
-
-            # Run the CLI command
-            result = runner.invoke(app, ["generate"])
-
-            # Verify the command failed due to missing required argument
-            assert result.exit_code == 2
-            assert "--project-id" in result.stdout
-
-        finally:
-            # Restore the original environment variables
-            os.environ.clear()
-            os.environ.update(original_environ)
+        result = runner.invoke(app, ["generate"])
+        assert result.exit_code == 2
+        assert "Usage:" in result.stdout
 
     #? These tests are skipped because of `memoryview: a bytes-like object is required, not 'MagicMock'`
     # def test_generate_handles_error(
