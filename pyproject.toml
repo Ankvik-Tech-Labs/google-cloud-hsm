@@ -155,6 +155,10 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 
+# Cli tool name & options
+[project.scripts]
+web3-google-hsm = "web3_google_hsm._cli:cli"
+
 
 #####################
 # Environment Setup #
@@ -172,9 +176,9 @@ extra-dependencies = [
     "eth-utils",
     "eth-keys",
     "ecdsa[gmpy2]",
-    "python-dotenv",
     "cryptography",
-    "rich"
+    # "rich", # typer will include it
+    "typer"
 ]
 installer = "uv" # or "pip"
 post-install-commands = ["pre-commit install"]
@@ -186,14 +190,14 @@ python = "3.10"
 [project.optional-dependencies]
 dev = [
     "ipython",
-    "web3"
+    "web3",
+    "python-dotenv",
 ]
 
 
 # Lint env dendencies
 [tool.hatch.envs.lint]
 dependencies = [
-    "pydantic",
     "mypy",
     "ruff",
     "deptry",
