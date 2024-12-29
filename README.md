@@ -117,6 +117,14 @@ from dotenv import load_dotenv
 load_dotenv()
 ```
 
+## 📋 Prerequisites
+
+Before you begin, ensure you have:
+1. 🔧 Set up your environment variables (see [README.md](https://github.com/Ankvik-Tech-Labs/web3-google-hsm?tab=readme-ov-file#-required-environment-variables))
+2. 🐍 Python `3.10` or higher installed
+3. 🌐 Access to a `Web3` provider (local or remote) (Optional)
+
+
 ### 📝 Environment Variable Descriptions
 
 - 🌐 `GOOGLE_CLOUD_PROJECT`: Your Google Cloud project ID
@@ -143,14 +151,71 @@ except ValueError as e:
 
 # 📚 Usage Guide
 
+## 📚 As A CLI Tool
+
+![cli_tool](media/cli_demo.gif)
+
+### 🔑 Key Generation
+
+Generate a new Ethereum signing key in Google Cloud HSM:
+
+```bash
+# Specify explicitly
+web3-google-hsm generate \
+  --project-id my-project \
+  --location us-east1 \
+  --keyring eth-keyring \
+  --key-id eth-key-1 \
+  --retention-days 365
+```
+
+```bash
+web3-google-hsm generate --project-id hsm-testing-445507 --location nam10 --keyring eth-keyring --key-id cli_key
+```
+
+Options:
+
+- `--project-id`: Google Cloud project ID (env: GOOGLE_CLOUD_PROJECT)
+- `--location`: Cloud KMS location (env: GOOGLE_CLOUD_REGION)
+- `--keyring`: Name of the key ring (env: KEY_RING)
+- `--key-id`: ID for the new key (env: KEY_NAME)
+- `--retention-days`: Days to retain key versions (default: 365)
+
+Example output:
+```
+✅ Created Ethereum signing key: projects/my-project/locations/us-east1/keyRings/eth-keyring/cryptoKeys/eth-key-1
+🔑 Ethereum address: 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
+```
+
+### 📝 Message Signing
+
+Sign a message using your HSM key:
+
+```bash
+# Sign a simple message
+web3-google-hsm sign "Hello Ethereum!" --account 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
+
+# Sign a hex message
+web3-google-hsm sign "0x4d7920686578206d657373616765" --account 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
+```
+
+Arguments:
+- `message`: The message to sign (text or hex)
+- `--account, -a`: Ethereum address of the signing account
+
+Example output:
+```
+✅ Message signed successfully!
+📝 Message: Hello Ethereum!
+🔏 Signature: 0x4d7920686578206d657373616765000000000000000000000000000000000000
+📊 Components:
+  v: 27
+  r: 0x1b7e9c7c039d8f4688a743b0c5c0e509209e6f200d956bf7f4e89f5ad330c135
+  s: 0x0d27e9c7c039d8f4688a743b0c5c0e509209e6f200d956bf7f4e89f5ad330c13
+```
+
 This guide demonstrates how to use the `Google Cloud KMS` Ethereum signer library for message and transaction signing.
 
-## 📋 Prerequisites
-
-Before you begin, ensure you have:
-1. 🔧 Set up your environment variables (see [README.md](https://github.com/Ankvik-Tech-Labs/web3-google-hsm?tab=readme-ov-file#-required-environment-variables))
-2. 🐍 Python `3.10` or higher installed
-3. 🌐 Access to a `Web3` provider (local or remote) (Optional)
 
 ## 🚀 Basic Setup
 
@@ -373,6 +438,13 @@ It'll automatically watch for changes in your code.
 
 
 </details>
+
+
+## 📖 Further Reading
+
+- [Google Cloud KMS Documentation](https://cloud.google.com/kms/docs)
+- [Ethereum Key Management Best Practices](https://docs.ethhub.io/using-ethereum/wallets/intro-to-ethereum-wallets/)
+- [Web3.py Documentation](https://web3py.readthedocs.io/)
 
 
 ## 📜 License
