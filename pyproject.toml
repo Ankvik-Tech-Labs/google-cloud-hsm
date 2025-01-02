@@ -15,6 +15,16 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
+    "pydantic",
+    "pydantic-settings",
+    "google-cloud-kms",
+    "eth-account",
+    "eth-utils",
+    "eth-keys",
+    "ecdsa[gmpy2]",
+    "cryptography",
+    # "rich", # typer will include it
+    "typer"
 ]
 
 [project.urls]
@@ -169,16 +179,6 @@ web3-google-hsm = "web3_google_hsm._cli:cli"
 [tool.hatch.envs.default]
 # https://hatch.pypa.io/1.12/config/environment/overview/#dependencies
 extra-dependencies = [
-    "pydantic",
-    "pydantic-settings",
-    "google-cloud-kms",
-    "eth-account",
-    "eth-utils",
-    "eth-keys",
-    "ecdsa[gmpy2]",
-    "cryptography",
-    # "rich", # typer will include it
-    "typer"
 ]
 installer = "uv" # or "pip"
 post-install-commands = ["pre-commit install"]
