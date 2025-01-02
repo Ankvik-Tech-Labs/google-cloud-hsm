@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.2] - 2024-12-29
+## [0.0.2] - 2025-01-02
 
 ### 🚀 Features
 
@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - File upload size updated in precommit config
+- Test_fail_generate_missing_required_args test should get fixed now
+- Pyproject dependencies structure fixed
 
 ### 📚 Documentation
 
@@ -25,6 +27,7 @@ All notable changes to this project will be documented in this file.
 
 - Changelog updated
 - Version updated to 0.0.2
+- Changelog updated
 - Changelog updated
 
 ## [0.0.1] - 2024-12-27
