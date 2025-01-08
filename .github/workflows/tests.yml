@@ -58,9 +58,33 @@ jobs:
         env:
           WEB3_PROVIDER_URI: ${{ secrets.WEB3_PROVIDER_URI }}
         run: |
-          anvil --fork-url $WEB3_PROVIDER_URI --balance 100000000 &
-          echo "ANVIL_PID=$!" >> $GITHUB_ENV
-          sleep 5  # Wait for anvil to start
+          max_retries=3
+          retry_count=0
+          start_anvil() {
+            anvil --fork-url $WEB3_PROVIDER_URI --balance 100000000 &
+            ANVIL_PID=$!
+            echo "ANVIL_PID=$ANVIL_PID" >> $GITHUB_ENV
+            sleep 5
+            # Check if anvil is running
+            if ps -p $ANVIL_PID > /dev/null; then
+              echo "Anvil started successfully with PID $ANVIL_PID"
+              return 0
+            else
+              echo "Anvil failed to start"
+              return 1
+            fi
+          }
+
+          until start_anvil || [ $retry_count -eq $max_retries ]; do
+            retry_count=$((retry_count+1))
+            echo "Anvil start attempt $retry_count of $max_retries failed. Retrying in 15 seconds..."
+            sleep 15
+          done
+
+          if [ $retry_count -eq $max_retries ]; then
+            echo "Failed to start Anvil after $max_retries attempts"
+            exit 1
+          fi
 
       - name: Integration Tests
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
