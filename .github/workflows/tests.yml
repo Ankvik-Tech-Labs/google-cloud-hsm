@@ -53,11 +53,13 @@ jobs:
       - name: Integration Tests
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
         env:
-          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: "/tmp/credentials.json"
           GOOGLE_CLOUD_PROJECT: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
           GOOGLE_CLOUD_REGION: ${{ secrets.GOOGLE_CLOUD_REGION }}
           KEY_RING: ${{ secrets.KEY_RING }}
           KEY_NAME: ${{ secrets.KEY_NAME }}
           RUN_INTEGRATION_TESTS: "true"
         run: |
+          echo "${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 --decode > $GOOGLE_APPLICATION_CREDENTIALS
+
           hatch run test:pytest tests/integration
