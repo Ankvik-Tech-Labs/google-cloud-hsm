@@ -49,8 +49,18 @@ jobs:
       - name: Unit Tests
         run: |
           hatch run test:pytest tests/unit
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1.3.1
+
+      - name: Start Anvil
+        if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
+        env:
+          WEB3_PROVIDER_URI: ${{ secrets.WEB3_PROVIDER_URI }}
+        run: |
+          anvil --fork-url $WEB3_PROVIDER_URI --balance 100000000 &
+          echo "ANVIL_PID=$!" >> $GITHUB_ENV
+          sleep 5  # Wait for anvil to start
 
       - name: Integration Tests
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
@@ -62,6 +72,29 @@ jobs:
           KEY_NAME: ${{ secrets.KEY_NAME }}
           RUN_INTEGRATION_TESTS: "true"
         run: |
+          # Write credentials
           echo "${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 --decode > $GOOGLE_APPLICATION_CREDENTIALS
 
+          # Run tests
           hatch run test:pytest tests/integration
+
+          # Clean up credentials immediately after use
+          rm -f $GOOGLE_APPLICATION_CREDENTIALS
+
+      - name: Stop Anvil
+        if: always()  # Run even if tests fail
+        run: |
+          kill $ANVIL_PID || true
+
+      - name: Cleanup Sensitive Data
+        if: always()  # Run even if previous steps fail
+        run: |
+          # Clean up any remaining sensitive files
+          rm -f /tmp/credentials.json
+          # Clear environment variables
+          unset GOOGLE_APPLICATION_CREDENTIALS
+          unset GOOGLE_CLOUD_PROJECT
+          unset GOOGLE_CLOUD_REGION
+          unset KEY_RING
+          unset KEY_NAME
+          unset WEB3_PROVIDER_URI
