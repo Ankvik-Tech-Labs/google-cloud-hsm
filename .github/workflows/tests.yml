@@ -49,6 +49,8 @@ jobs:
       - name: Unit Tests
         run: |
           hatch run test:pytest tests/unit
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1.3.1
 
       - name: Integration Tests
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
