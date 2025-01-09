@@ -8,13 +8,14 @@ from eth_account._utils.legacy_transactions import serializable_unsigned_transac
 from eth_account.messages import _hash_eip191_message, encode_defunct  # noqa: PLC2701
 from eth_typing import ChecksumAddress
 from eth_utils import keccak, to_checksum_address
+from google.auth import load_credentials_from_dict
 from google.cloud import kms
 from google.protobuf import duration_pb2  # type: ignore
 from pydantic import BaseModel, Field, PrivateAttr
 from rich.traceback import install
 
 from web3_google_hsm.config import BaseConfig
-from web3_google_hsm.exceptions import ConfigurationError, SignatureError
+from web3_google_hsm.exceptions import SignatureError
 from web3_google_hsm.types.ethereum_types import MSG_HASH_LENGTH, Signature, Transaction
 from web3_google_hsm.utils import convert_der_to_rsv, extract_public_key_bytes
 
@@ -46,15 +47,14 @@ class GCPKmsAccount(BaseModel):
         Raises:
             ValueError: If both config and credentials are provided
         """
-        if config is not None and credentials is not None:
-            msg = "Cannot provide both config and credentials. Use one or neither."
-            raise ConfigurationError(msg)
 
         super().__init__(**data)
 
+        if isinstance(credentials, dict):
+            credentials, _ = load_credentials_from_dict(credentials)
         # Initialize client based on provided auth method
         self._client = (
-            kms.KeyManagementServiceClient(credentials=credentials) if credentials else kms.KeyManagementServiceClient()
+            kms.KeyManagementServiceClient(credentials=credentials) if credentials else kms.KeyManagementServiceClient()  # type: ignore
         )
 
         # Initialize settings if config is provided, otherwise None

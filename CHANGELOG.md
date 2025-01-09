@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0] - 2025-01-09
+
+### 🚀 Features
+
+- Added option to pass credentials as dict object
+
 ## [0.0.2] - 2025-01-02
 
 ### 🚀 Features
@@ -27,6 +33,7 @@ All notable changes to this project will be documented in this file.
 
 - Changelog updated
 - Version updated to 0.0.2
+- Changelog updated
 - Changelog updated
 - Changelog updated
 

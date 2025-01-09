@@ -62,7 +62,7 @@ def test_transaction_signing(gcp_account, fund_account, web3):
         gas_price=web3.eth.gas_price,
         gas_limit=21000,
         to="0xa5D3241A1591061F2a4bB69CA0215F66520E67cf",
-        value=web3.to_wei(0.001, "ether"),
+        value=web3.to_wei(0.0001, "ether"),
         data="0x",
         from_=gcp_account.address
     )
