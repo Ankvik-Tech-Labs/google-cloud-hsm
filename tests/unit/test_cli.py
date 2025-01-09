@@ -122,8 +122,20 @@ class TestGenerateCommand:
         assert result.exit_code == 0
         assert "Created Ethereum signing key" in result.stdout
 
-    def test_fail_generate_missing_required_args(self, runner: CliRunner) -> None:
+    def test_fail_generate_missing_required_args(self, runner: CliRunner, monkeypatch) -> None:
         """Test key generation fails when required arguments are missing."""
+        # ? Need to clrear the env vars in order to raise error in the cli
+        env_vars_to_clear = [
+            "GOOGLE_CLOUD_PROJECT",
+            "GOOGLE_CLOUD_REGION",
+            "KEY_RING",
+            "KEY_NAME",
+            "GOOGLE_APPLICATION_CREDENTIALS",
+            "GCP_ADC_CREDENTIALS_STRING"
+        ]
+
+        for env_var in env_vars_to_clear:
+            monkeypatch.delenv(env_var, raising=False)
         result = runner.invoke(app, ["generate"])
         assert result.exit_code == 2
         assert "Usage:" in result.stdout

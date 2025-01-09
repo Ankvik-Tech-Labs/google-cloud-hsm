@@ -368,6 +368,114 @@ except Exception as e:
     print(f"Transaction error: {e}")
 ```
 
+## 🚀 CI/CD Pipeline Integration
+
+### 🔄 Using in GitHub Actions or Other CI/CD Pipelines
+
+For CI/CD environments where you can't use traditional environment variables or service account files, you can pass the credentials directly as a JSON string:
+
+```python
+from web3_google_hsm.accounts.gcp_kms_account import GCPKmsAccount
+from web3_google_hsm.config import BaseConfig
+import json
+
+# Create config from environment variables
+config = BaseConfig(
+    project_id="your-project-id",
+    location_id="your-location",
+    key_ring_id="your-keyring",
+    key_id="your-key-id"
+)
+
+# Load credentials from CI/CD secret
+credentials = json.loads(os.environ["GCP_ADC_CREDENTIALS_STRING"])
+
+# Initialize account with both config and credentials
+account = GCPKmsAccount(config=config, credentials=credentials)
+
+# or Let the class read the values from env variables
+account = GCPKmsAccount(credentials=credentials)
+
+```
+
+### 🔒 GitHub Actions Example
+
+```yaml
+name: Deploy with HSM Signing
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install web3-google-hsm
+
+      - name: Sign and Deploy
+        env:
+          GOOGLE_CLOUD_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+          GOOGLE_CLOUD_REGION: ${{ secrets.GCP_REGION }}
+          KEY_RING: ${{ secrets.GCP_KEYRING }}
+          KEY_NAME: ${{ secrets.GCP_KEY_NAME }}
+          GCP_ADC_CREDENTIALS_STRING: ${{ secrets.GCP_ADC_CREDENTIALS_STRING }}
+        run: |
+          python your_deployment_script.py
+```
+
+### 📝 Example Deployment Script
+```python
+import os
+import json
+from web3_google_hsm.accounts.gcp_kms_account import GCPKmsAccount
+from web3_google_hsm.config import BaseConfig
+from web3_google_hsm.types.ethereum_types import Transaction
+
+def deploy_contract():
+    # Initialize with both config and credentials
+    config = BaseConfig.from_env()  # Uses environment variables
+    credentials = json.loads(os.environ["GCP_ADC_CREDENTIALS_STRING"])
+
+    account = GCPKmsAccount(config=config, credentials=credentials)
+
+    # Your deployment logic here
+    print(f"Deploying from address: {account.address}")
+
+    # Example transaction
+    tx = Transaction(
+        nonce=0,
+        gas_price=2000000000,
+        gas_limit=1000000,
+        to="0x...",
+        value=0,
+        data="0x...",
+        chain_id=1
+    )
+
+    signed_tx = account.sign_transaction(tx)
+    # Send transaction...
+
+if __name__ == "__main__":
+    deploy_contract()
+```
+
+### 🔑 Required Secrets for CI/CD
+
+Set these secrets in your CI/CD environment:
+
+- `GCP_PROJECT_ID`: Your Google Cloud project ID
+- `GCP_REGION`: The region where your KMS resources are located
+- `GCP_KEYRING`: The name of your KMS key ring
+- `GCP_KEY_NAME`: The name of your KMS key
+- `GCP_ADC_CREDENTIALS_STRING`: Your service account credentials JSON as a string
+
+
+
 
 ---
 

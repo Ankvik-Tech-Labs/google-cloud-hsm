@@ -8,6 +8,7 @@ from eth_account._utils.legacy_transactions import serializable_unsigned_transac
 from eth_account.messages import _hash_eip191_message, encode_defunct  # noqa: PLC2701
 from eth_typing import ChecksumAddress
 from eth_utils import keccak, to_checksum_address
+from google.auth import load_credentials_from_dict
 from google.cloud import kms
 from google.protobuf import duration_pb2  # type: ignore
 from pydantic import BaseModel, Field, PrivateAttr
@@ -33,10 +34,33 @@ class GCPKmsAccount(BaseModel):
     _cached_public_key: bytes | None = PrivateAttr(default=None)
     _settings: BaseConfig = PrivateAttr()
 
-    def __init__(self, config: BaseConfig | None = None, **data: Any):
+    def __init__(self, config: BaseConfig | None = None, credentials: dict | None = None, **data: Any):
+        """
+        Initialize GCP KMS Account with either config or credentials.
+        If neither is provided, uses Google SDK default auth mechanism.
+
+        Args:
+            config: BaseConfig instance for environment-based configuration
+            credentials: Dictionary containing GCP credentials
+            **data: Additional data passed to BaseModel
+
+        Raises:
+            ValueError: If both config and credentials are provided
+        """
+
         super().__init__(**data)
-        self._client = kms.KeyManagementServiceClient()
+
+        if isinstance(credentials, dict):
+            credentials, _ = load_credentials_from_dict(credentials)
+        # Initialize client based on provided auth method
+        self._client = (
+            kms.KeyManagementServiceClient(credentials=credentials) if credentials else kms.KeyManagementServiceClient()  # type: ignore
+        )
+
+        # Initialize settings if config is provided, otherwise None
         self._settings = config or BaseConfig.from_env()
+
+        # Set key path based on config or credentials
         self.key_path = self._get_key_version_path()
 
     def _get_key_version_path(self) -> str:
