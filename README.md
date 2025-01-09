@@ -141,7 +141,7 @@ You can verify your environment setup with:
 from web3_google_hsm.config import BaseConfig
 
 try:
-    config = BaseConfig()
+    config = BaseConfig.from_env()
     print("Environment configured successfully!")
     print(f"Project ID: {config.project_id}")
     print(f"Region: {config.location_id}")
