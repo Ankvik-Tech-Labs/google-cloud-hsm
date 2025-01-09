@@ -13,7 +13,6 @@ REQUIRED_ENV_VARS = {
     "KEY_RING": os.getenv("KEY_RING"),
     "KEY_NAME": os.getenv("KEY_NAME"),
     "GCP_ADC_CREDENTIALS_STRING": os.getenv("GCP_ADC_CREDENTIALS_STRING"),
-    "GCP_ADC_CREDENTIALS_STRING": os.getenv("GCP_ADC_CREDENTIALS_STRING"),
 }
 
 # Skip all tests if any required env var is missing
