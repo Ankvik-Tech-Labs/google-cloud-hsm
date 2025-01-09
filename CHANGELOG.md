@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Added option to pass credentials as dict object
 
+### ⚙️ Miscellaneous Tasks
+
+- Changelog updated
+
 ## [0.0.2] - 2025-01-02
 
 ### 🚀 Features

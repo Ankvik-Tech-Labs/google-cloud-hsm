@@ -12,8 +12,8 @@ REQUIRED_ENV_VARS = {
     "GOOGLE_CLOUD_REGION": os.getenv("GOOGLE_CLOUD_REGION"),
     "KEY_RING": os.getenv("KEY_RING"),
     "KEY_NAME": os.getenv("KEY_NAME"),
-    "GCP_CREDENTIALS_STRING": os.getenv("GCP_CREDENTIALS_STRING"),
-    "GCP_CREDENTIALS_STRING": os.getenv("GCP_CREDENTIALS_STRING"),
+    "GCP_ADC_CREDENTIALS_STRING": os.getenv("GCP_ADC_CREDENTIALS_STRING"),
+    "GCP_ADC_CREDENTIALS_STRING": os.getenv("GCP_ADC_CREDENTIALS_STRING"),
 }
 
 # Skip all tests if any required env var is missing
@@ -25,8 +25,8 @@ pytestmark = pytest.mark.skipif(
 
 def test_account_initialization_with_both():
     """Test initializing account with both config and credentials."""
-    # Load credentials from GCP_CREDENTIALS_STRING env var
-    credentials = json.loads(os.environ["GCP_CREDENTIALS_STRING"])
+    # Load credentials from GCP_ADC_CREDENTIALS_STRING env var
+    credentials = json.loads(os.environ["GCP_ADC_CREDENTIALS_STRING"])
 
     # Create config from environment
     config = BaseConfig.from_env()
@@ -73,7 +73,7 @@ def test_fail_account_initialization_with_only_config(monkeypatch):
         "KEY_RING",
         "KEY_NAME",
         "GOOGLE_APPLICATION_CREDENTIALS",
-        "GCP_CREDENTIALS_STRING"
+        "GCP_ADC_CREDENTIALS_STRING"
     ]
 
     for env_var in env_vars_to_clear:
@@ -94,7 +94,7 @@ def test_fail_account_initialization_with_only_credentials(monkeypatch):
 
     for env_var in env_vars_to_clear:
         monkeypatch.delenv(env_var, raising=False)
-    credentials = json.loads(os.environ["GCP_CREDENTIALS_STRING"])
+    credentials = json.loads(os.environ["GCP_ADC_CREDENTIALS_STRING"])
 
     with pytest.raises(ValidationError):
         GCPKmsAccount(credentials=credentials)
@@ -102,7 +102,7 @@ def test_fail_account_initialization_with_only_credentials(monkeypatch):
 def test_key_path_matches_config(monkeypatch):
     """Test that the key path matches the config values."""
     # Load both config and credentials
-    credentials = json.loads(os.environ["GCP_CREDENTIALS_STRING"])
+    credentials = json.loads(os.environ["GCP_ADC_CREDENTIALS_STRING"])
 
     config = BaseConfig.from_env()
     account = GCPKmsAccount(config=config, credentials=credentials)

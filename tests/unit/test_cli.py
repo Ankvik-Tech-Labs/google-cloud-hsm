@@ -131,7 +131,7 @@ class TestGenerateCommand:
             "KEY_RING",
             "KEY_NAME",
             "GOOGLE_APPLICATION_CREDENTIALS",
-            "GCP_CREDENTIALS_STRING"
+            "GCP_ADC_CREDENTIALS_STRING"
         ]
 
         for env_var in env_vars_to_clear:
