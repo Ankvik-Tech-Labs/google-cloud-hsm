@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field, PrivateAttr
 from rich.traceback import install
 
 from web3_google_hsm.config import BaseConfig
-from web3_google_hsm.exceptions import SignatureError
+from web3_google_hsm.exceptions import ConfigurationError, SignatureError
 from web3_google_hsm.types.ethereum_types import MSG_HASH_LENGTH, Signature, Transaction
 from web3_google_hsm.utils import convert_der_to_rsv, extract_public_key_bytes
 
@@ -33,10 +33,34 @@ class GCPKmsAccount(BaseModel):
     _cached_public_key: bytes | None = PrivateAttr(default=None)
     _settings: BaseConfig = PrivateAttr()
 
-    def __init__(self, config: BaseConfig | None = None, **data: Any):
+    def __init__(self, config: BaseConfig | None = None, credentials: dict | None = None, **data: Any):
+        """
+        Initialize GCP KMS Account with either config or credentials.
+        If neither is provided, uses Google SDK default auth mechanism.
+
+        Args:
+            config: BaseConfig instance for environment-based configuration
+            credentials: Dictionary containing GCP credentials
+            **data: Additional data passed to BaseModel
+
+        Raises:
+            ValueError: If both config and credentials are provided
+        """
+        if config is not None and credentials is not None:
+            msg = "Cannot provide both config and credentials. Use one or neither."
+            raise ConfigurationError(msg)
+
         super().__init__(**data)
-        self._client = kms.KeyManagementServiceClient()
+
+        # Initialize client based on provided auth method
+        self._client = (
+            kms.KeyManagementServiceClient(credentials=credentials) if credentials else kms.KeyManagementServiceClient()
+        )
+
+        # Initialize settings if config is provided, otherwise None
         self._settings = config or BaseConfig.from_env()
+
+        # Set key path based on config or credentials
         self.key_path = self._get_key_version_path()
 
     def _get_key_version_path(self) -> str:
