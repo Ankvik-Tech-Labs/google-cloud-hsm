@@ -119,3 +119,4 @@ _version.py
 .idea/
 *.pem
 *.tape
+*-key*
