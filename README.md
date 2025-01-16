@@ -46,6 +46,143 @@ in the Google cloud console. Which will look something like the following
 
 ![gcp_hsm_key](media/gcp_hsm_key.png)
 
+## 🔐 Secure Service Account Setup
+
+### Overview
+
+Instead of using developer accounts with broad permissions, we'll create a dedicated service account with minimal permissions specifically for Cloud KMS signing operations.
+
+### Step-by-Step Setup
+
+#### 1. Create Service Account
+
+```bash
+# Create a new service account specifically for KMS signing
+gcloud iam service-accounts create eth-kms-signer \
+    --description="Service account for Ethereum KMS signing operations" \
+    --display-name="ETH KMS Signer"
+```
+
+#### 2. Create Custom IAM Role
+
+Create a custom role with minimal permissions needed for KMS signing:
+
+```bash
+# Create a custom role for KMS signing operations
+gcloud iam roles create kms_crypto_signer \
+    --project=YOUR_PROJECT_ID \
+    --title="KMS Crypto Signer" \
+    --description="Minimal permissions for KMS signing operations" \
+    --permissions=\
+cloudkms.cryptoKeyVersions.useToSign,\
+cloudkms.cryptoKeyVersions.viewPublicKey,\
+cloudkms.cryptoKeys.get,\
+cloudkms.keyRings.get
+```
+
+#### 3. Bind Role to Service Account
+
+```bash
+# Get the full service account email
+export SA_EMAIL="eth-kms-signer@YOUR_PROJECT_ID.iam.gserviceaccount.com"
+
+# Bind the custom role to the service account for specific key
+# bash/sh/zsh
+gcloud kms keys add-iam-policy-binding YOUR_KEY_NAME \
+    --keyring=YOUR_KEYRING_NAME \
+    --location=YOUR_LOCATION \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="projects/YOUR_PROJECT_ID/roles/kms_crypto_signer"
+```
+
+For `fish` shell
+```bash
+gcloud kms keys add-iam-policy-binding YOUR_KEY_NAME \
+    --keyring=YOUR_KEYRING_NAME \
+    --location=YOUR_LOCATION \
+    --member="serviceAccount:$SA_EMAIL" \
+    --role="projects/YOUR_PROJECT_ID/roles/kms_crypto_signer"
+```
+
+#### 4. Create and Download Service Account Key
+
+```bash
+# Create and download the key file
+# bash/sh/zsh
+gcloud iam service-accounts keys create eth-kms-key.json \
+    --iam-account="${SA_EMAIL}"
+
+# Convert to environment variable format
+export GCP_ADC_CREDENTIALS_STRING=$(cat eth-kms-key.json | jq -c)
+```
+
+For `fish` shell
+```bash
+gcloud iam service-accounts keys create eth-kms-key.json \
+    --iam-account="$SA_EMAIL"
+
+# Convert to environment variable format
+export GCP_ADC_CREDENTIALS_STRING=(cat eth-kms-key.json | jq -c)
+```
+
+### Permissions Explained
+
+The custom role includes only the minimal permissions needed:
+
+- `cloudkms.cryptoKeyVersions.useToSign`: Allow signing operations
+- `cloudkms.cryptoKeyVersions.viewPublicKey`: Allow retrieving public key
+- `cloudkms.cryptoKeys.get`: Allow reading key metadata
+- `cloudkms.keyRings.get`: Allow reading keyring metadata
+
+### Security Best Practices
+
+1. **Principle of Least Privilege**: The service account has only the permissions needed for signing operations
+2. **Key Restriction**: Service account only has access to specific KMS keys
+3. **Access Scope**: Permissions are limited to specific keyring/key combinations
+4. **Key Rotation**: Set up regular rotation for service account keys
+5. **Audit Logging**: Enable audit logging for all KMS operations
+
+### Monitoring and Audit
+
+1. Enable detailed audit logging:
+```bash
+gcloud services enable cloudkms.googleapis.com
+gcloud services enable monitoring.googleapis.com
+gcloud services enable logging.googleapis.com
+```
+
+2. Set up alerts for:
+- Failed signing attempts
+- High frequency of signing operations
+- Access from unexpected IP ranges
+- Service account key usage from multiple locations
+
+### ⚠️ Troubleshooting
+
+Common issues and solutions:
+
+1. **Permission Denied**: Check IAM bindings and key permissions
+```bash
+gcloud kms keys get-iam-policy YOUR_KEY_NAME \
+    --keyring=YOUR_KEYRING_NAME \
+    --location=YOUR_LOCATION
+```
+
+2. **Invalid Key Version**: Ensure key version is active
+```bash
+gcloud kms keys versions list \
+    --key=YOUR_KEY_NAME \
+    --keyring=YOUR_KEYRING_NAME \
+    --location=YOUR_LOCATION
+```
+
+3. **Network Issues**: Check VPC Service Controls if enabled
+```bash
+gcloud access-context-manager perimeters describe YOUR_PERIMETER
+```
+
+The above steps should be enough. But if we want to dig deep please refer to the [google cloud serive account docs page](https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-console).
+
 ### 🌟 Required Environment Variables
 
 Before using this library, you need to set up the following environment variables:
@@ -72,7 +209,7 @@ source ~/.bashrc  # or source ~/.bash_profile
 ```
 
 ### 🐚 Zsh
-```zsh
+```bash
 # Add to ~/.zshrc
 export GOOGLE_CLOUD_PROJECT="your-project-id"
 export GOOGLE_CLOUD_REGION="us-east1"
@@ -373,6 +510,11 @@ except Exception as e:
 ### 🔄 Using in GitHub Actions or Other CI/CD Pipelines
 
 For CI/CD environments where you can't use traditional environment variables or service account files, you can pass the credentials directly as a JSON string:
+
+```sh
+# save the credentials as a string
+export GCP_ADC_CREDENTIALS_STRING=$(cat ~/path/to/creds/eth-kms-key.json | jq -c)
+```
 
 ```python
 from web3_google_hsm.accounts.gcp_kms_account import GCPKmsAccount
